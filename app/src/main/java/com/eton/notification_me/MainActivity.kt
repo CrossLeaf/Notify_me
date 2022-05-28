@@ -14,7 +14,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
-import kotlin.math.log
 
 
 open class MainActivity : AppCompatActivity() {
@@ -43,6 +42,8 @@ open class MainActivity : AppCompatActivity() {
                     startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
                 }.show()
         }
+        NotificationUtils().createNotificationChannel(this)
+        NotificationUtils.condition = arrayListOf("123", "456", "eton")
     }
 
     private fun isPurview(context: Context): Boolean { // 檢查權限是否開啟 true = 開啟 ，false = 未開啟

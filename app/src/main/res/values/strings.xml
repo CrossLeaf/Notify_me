@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Notification_me</string>
+    <string name="channel_description">頻道描述</string>
 </resources>
