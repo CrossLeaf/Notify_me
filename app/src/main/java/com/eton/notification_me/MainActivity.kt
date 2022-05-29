@@ -3,28 +3,24 @@ package com.eton.notification_me
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.os.Message
-import android.util.Log
-import android.widget.ImageView
-import android.widget.TextView
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 
 open class MainActivity : AppCompatActivity() {
 
-
+    var conditionArray = arrayListOf<String>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        textView = findViewById(R.id.textView)
-        smallIcon = findViewById(R.id.smallIcon)
-        largeIcon = findViewById(R.id.largeIcon)
+        val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewCondition)
 
         if (!isPurview(this)) { // 檢查權限是否開啟，未開啟則開啟對話框
             AlertDialog.Builder(this@MainActivity)
@@ -43,7 +39,12 @@ open class MainActivity : AppCompatActivity() {
                 }.show()
         }
         NotificationUtils().createNotificationChannel(this)
-        NotificationUtils.condition = arrayListOf("123", "456", "eton")
+        conditionArray.add("123")
+        conditionArray.add("46")
+        conditionArray.add("13")
+        recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        recyclerView.adapter = ConditionAdapter(conditionArray)
+//        NotificationUtils.condition = arrayListOf("123", "456", "eton")
     }
 
     private fun isPurview(context: Context): Boolean { // 檢查權限是否開啟 true = 開啟 ，false = 未開啟
@@ -51,51 +52,31 @@ open class MainActivity : AppCompatActivity() {
         return packageNames.contains(context.packageName)
     }
 
-    companion object {
-        var textView: TextView? = null
-        var smallIcon: ImageView? = null
-        var largeIcon: ImageView? = null
+    class ConditionAdapter(private val dataArray: ArrayList<String>) :
+        RecyclerView.Adapter<ConditionAdapter.ViewHolder>() {
+        class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            val editText: EditText
 
-        //儲存通知訊息的應用程式小圖示
-        var drawableIcon: Drawable? = null
-
-        //儲存通知訊息大圖示
-        var bitmapIcon: Bitmap? = null
-
-        //儲存包名、標題、內容文字
-        var string: String? = null
-
-        val handler = Handler(Looper.getMainLooper()) {
-            //將資料顯示，更新至畫面
-            textView!!.text = string
-            smallIcon!!.setImageDrawable(drawableIcon)
-            largeIcon!!.setImageBitmap(bitmapIcon)
-            true
+            init {
+                // Define click listener for the ViewHolder's View.
+                editText = view.findViewById(R.id.etCondition)
+            }
         }
 
-        fun show(
-            packageName: String,
-            title: String?,
-            text: String?,
-            small: Drawable?,
-            large: Bitmap?
-        ) {
-            string = """
-             包名：$packageName
-             
-             標題：$title
-             
-             文字：$text
-             
-             
-             """.trimIndent()
-            drawableIcon = small
-            bitmapIcon = large
-            Thread {
-                val msg: Message = Message.obtain()
-                handler.sendMessage(msg)
-            }.start()
-            Log.d(packageName, "show: title = $title, text = $text")
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_condition, parent, false)
+
+            return ViewHolder(view)
         }
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            holder.editText.setText(dataArray[position])
+        }
+
+        override fun getItemCount(): Int {
+            return dataArray.size
+        }
+
     }
 }
