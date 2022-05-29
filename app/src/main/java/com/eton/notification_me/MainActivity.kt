@@ -8,7 +8,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.app.NotificationManagerCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,8 +22,20 @@ open class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewCondition)
 
+
+
+        NotificationUtils().createNotificationChannel(this)
+        conditionArray.add("123")
+        conditionArray.add("46")
+        conditionArray.add("13")
+
+//        NotificationUtils.condition = arrayListOf("123", "456", "eton")
+        initView()
+    }
+
+    override fun onResume() {
+        super.onResume()
         if (!isPurview(this)) { // 檢查權限是否開啟，未開啟則開啟對話框
             AlertDialog.Builder(this@MainActivity)
                 .setTitle(R.string.app_name)
@@ -38,13 +52,20 @@ open class MainActivity : AppCompatActivity() {
                     startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
                 }.show()
         }
-        NotificationUtils().createNotificationChannel(this)
-        conditionArray.add("123")
-        conditionArray.add("46")
-        conditionArray.add("13")
+    }
+
+    private fun initView() {
+        val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewCondition)
         recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         recyclerView.adapter = ConditionAdapter(conditionArray)
-//        NotificationUtils.condition = arrayListOf("123", "456", "eton")
+
+        findViewById<AppCompatButton>(R.id.btnAdd).setOnClickListener {
+            conditionArray.add("")
+            (recyclerView.adapter as ConditionAdapter).notifyItemRangeInserted(
+                conditionArray.size - 1,
+                conditionArray.size
+            )
+        }
     }
 
     private fun isPurview(context: Context): Boolean { // 檢查權限是否開啟 true = 開啟 ，false = 未開啟
@@ -55,12 +76,8 @@ open class MainActivity : AppCompatActivity() {
     class ConditionAdapter(private val dataArray: ArrayList<String>) :
         RecyclerView.Adapter<ConditionAdapter.ViewHolder>() {
         class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            val editText: EditText
-
-            init {
-                // Define click listener for the ViewHolder's View.
-                editText = view.findViewById(R.id.etCondition)
-            }
+            val editText: EditText = view.findViewById(R.id.etCondition)
+            val imgRemove: ImageView = view.findViewById(R.id.imgRemove)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -72,6 +89,10 @@ open class MainActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             holder.editText.setText(dataArray[position])
+            holder.imgRemove.setOnClickListener {
+                dataArray.removeAt(position)
+                notifyDataSetChanged()
+            }
         }
 
         override fun getItemCount(): Int {
