@@ -1,6 +1,5 @@
 package com.eton.notification_me
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.ContentResolver
@@ -31,13 +30,16 @@ open class NotificationUtils {
         messageBody: String,
         smallIcon: Drawable?
     ) {
-        if (packageName == context.applicationContext.packageName) {
+        Log.d("TAG", "sendNotification: packageName? $packageName")
+        if (packageName == context.applicationContext.packageName
+            && !packageName.contains("skype")
+            && !packageName.contains("qchat")
+        ) {
             return
         }
-        Log.d("TAG", "sendNotification: packageName? $packageName")
 
         condition.any {
-            messageBody.contains(it)
+            messageBody.contains(it, true)
         }.run {
             Log.d("TAG", "sendNotification: match? $this")
             if (!this) {
