@@ -1,5 +1,6 @@
 package com.eton.notification_me
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
@@ -7,6 +8,7 @@ import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
@@ -65,23 +67,29 @@ open class MainActivity : AppCompatActivity() {
         return true
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_save -> {
+                val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
                 saveCondition()
+                adapter.notifyDataSetChanged()
             }
         }
         return super.onOptionsItemSelected(item)
     }
 
+    lateinit var adapter: ConditionAdapter
     private fun initView() {
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewCondition)
         recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        recyclerView.adapter = ConditionAdapter(conditionArray)
+        adapter = ConditionAdapter(conditionArray)
+        recyclerView.adapter = adapter
 
         findViewById<AppCompatButton>(R.id.btnAdd).setOnClickListener {
             conditionArray.add("")
-            (recyclerView.adapter as ConditionAdapter).notifyItemRangeInserted(
+            adapter.notifyItemRangeInserted(
                 conditionArray.size - 1,
                 conditionArray.size
             )
@@ -97,9 +105,13 @@ open class MainActivity : AppCompatActivity() {
      */
     @RequiresApi(Build.VERSION_CODES.N)
     private fun saveCondition() {
-        conditionArray.removeIf {
+        val temp = arrayListOf<String>()
+        temp.addAll(conditionArray)
+        temp.removeIf {
             it.isEmpty()
         }
+        conditionArray.clear()
+        conditionArray.addAll(temp)
         // 保存至 Sp
         pref.edit().putStringSet(CONDITION_KEY, conditionArray.toSet()).apply()
         // 通知條件設定
@@ -131,7 +143,8 @@ open class MainActivity : AppCompatActivity() {
             holder.editText.apply {
                 setText(dataArray[position])
                 doAfterTextChanged {
-                    dataArray[position] = it.toString()
+                    if (this.hasFocus())
+                        dataArray[position] = it.toString()
                 }
             }
             holder.imgRemove.setOnClickListener {

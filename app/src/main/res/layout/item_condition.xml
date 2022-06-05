@@ -9,6 +9,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="請輸入條件"
+        android:focusableInTouchMode="true"
         app:layout_constraintEnd_toStartOf="@+id/imgRemove"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
