@@ -31,9 +31,9 @@ open class NotificationUtils {
         smallIcon: Drawable?
     ) {
         Log.d("TAG", "sendNotification: packageName? $packageName")
+        // TODO: 之後可以設定從選單抓取要監聽的app
         if (packageName == context.applicationContext.packageName
-            && !packageName.contains("skype")
-            && !packageName.contains("qchat")
+            || (!packageName.contains("skype") && !packageName.contains("qchat"))
         ) {
             return
         }
