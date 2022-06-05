@@ -4,16 +4,17 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
@@ -59,6 +60,20 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_save -> {
+                saveCondition()
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     private fun initView() {
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewCondition)
         recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
@@ -80,7 +95,11 @@ open class MainActivity : AppCompatActivity() {
     /**
      * 儲存條件
      */
+    @RequiresApi(Build.VERSION_CODES.N)
     private fun saveCondition() {
+        conditionArray.removeIf {
+            it.isEmpty()
+        }
         // 保存至 Sp
         pref.edit().putStringSet(CONDITION_KEY, conditionArray.toSet()).apply()
         // 通知條件設定
@@ -109,7 +128,12 @@ open class MainActivity : AppCompatActivity() {
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.editText.setText(dataArray[position])
+            holder.editText.apply {
+                setText(dataArray[position])
+                doAfterTextChanged {
+                    dataArray[position] = it.toString()
+                }
+            }
             holder.imgRemove.setOnClickListener {
                 dataArray.removeAt(position)
                 notifyDataSetChanged()
@@ -119,6 +143,5 @@ open class MainActivity : AppCompatActivity() {
         override fun getItemCount(): Int {
             return dataArray.size
         }
-
     }
 }
