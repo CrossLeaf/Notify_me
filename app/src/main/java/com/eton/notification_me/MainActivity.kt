@@ -3,12 +3,14 @@ package com.eton.notification_me
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.app.NotificationManagerCompat
@@ -17,20 +19,23 @@ import androidx.recyclerview.widget.RecyclerView
 
 
 open class MainActivity : AppCompatActivity() {
+    companion object {
+        const val CONDITION_KEY = "condition_key"
+    }
 
     var conditionArray = arrayListOf<String>()
+    private lateinit var pref: SharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-
-
         NotificationUtils().createNotificationChannel(this)
-        conditionArray.add("123")
-        conditionArray.add("46")
-        conditionArray.add("13")
 
-//        NotificationUtils.condition = arrayListOf("123", "456", "eton")
+        getSP()
+        val stringSet: MutableSet<String> =
+            pref.getStringSet(CONDITION_KEY, buildSet {}) as MutableSet<String>
+        conditionArray = stringSet.toMutableList() as ArrayList<String>
+
         initView()
     }
 
@@ -66,6 +71,22 @@ open class MainActivity : AppCompatActivity() {
                 conditionArray.size
             )
         }
+    }
+
+    private fun getSP() {
+        pref = this.getSharedPreferences("Condition", Context.MODE_PRIVATE)
+    }
+
+    /**
+     * 儲存條件
+     */
+    private fun saveCondition() {
+        // 保存至 Sp
+        pref.edit().putStringSet(CONDITION_KEY, conditionArray.toSet()).apply()
+        // 通知條件設定
+        NotificationUtils.condition = conditionArray
+        // 顯示保存成功 toast
+        Toast.makeText(this, "保存成功", Toast.LENGTH_SHORT).show()
     }
 
     private fun isPurview(context: Context): Boolean { // 檢查權限是否開啟 true = 開啟 ，false = 未開啟
