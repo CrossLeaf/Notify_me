@@ -28,6 +28,7 @@ open class MainActivity : AppCompatActivity() {
 
     var conditionArray = arrayListOf<String>()
     private lateinit var pref: SharedPreferences
+    lateinit var adapter: ConditionAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,6 +39,8 @@ open class MainActivity : AppCompatActivity() {
         val stringSet: MutableSet<String> =
             pref.getStringSet(CONDITION_KEY, buildSet {}) as MutableSet<String>
         conditionArray = stringSet.toMutableList() as ArrayList<String>
+        // 通知條件設定
+        NotificationUtils.condition = conditionArray
 
         initView()
     }
@@ -71,7 +74,8 @@ open class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_save -> {
-                val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+                val inputMethodManager =
+                    getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
                 inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
                 saveCondition()
                 adapter.notifyDataSetChanged()
@@ -80,7 +84,6 @@ open class MainActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    lateinit var adapter: ConditionAdapter
     private fun initView() {
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewCondition)
         recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)

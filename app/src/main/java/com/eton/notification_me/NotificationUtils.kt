@@ -1,9 +1,13 @@
 package com.eton.notification_me
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.ContentResolver
 import android.content.Context
 import android.graphics.drawable.Drawable
+import android.media.AudioAttributes
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -12,13 +16,21 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import java.util.*
 
+
 open class NotificationUtils {
     companion object {
         const val CHANNEL_ID = "work"
         var condition = arrayListOf<String>()
     }
 
-    fun sendNotification(context: Context, packageName: String, messageBody: String, smallIcon: Drawable?) {
+    private var notificationManager: NotificationManager? = null
+
+    fun sendNotification(
+        context: Context,
+        packageName: String,
+        messageBody: String,
+        smallIcon: Drawable?
+    ) {
         if (packageName == context.applicationContext.packageName) {
             return
         }
@@ -57,10 +69,21 @@ open class NotificationUtils {
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
             }
+            val uri = Uri.Builder()
+                .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+                .authority(context.packageName)
+                .appendPath("raw")
+                .appendPath("warning")
+                .build()
+            val audioAttributes = AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .build()
+            channel.setSound(uri, audioAttributes)
+
             // Register the channel with the system
-            val notificationManager: NotificationManager =
-                context.getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel)
+            notificationManager = context.getSystemService(NotificationManager::class.java)
+            notificationManager?.createNotificationChannel(channel)
 
         }
     }
