@@ -9,6 +9,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Notification_me">
+
+        <meta-data android:name="com.eton.notification_me.smallicon"
+            android:resource="@drawable/spy_notify" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

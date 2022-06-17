@@ -9,6 +9,7 @@ import android.media.AudioAttributes
 import android.net.Uri
 import android.os.Build
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -47,13 +48,17 @@ open class NotificationUtils {
                 return
             }
             val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.spy_notification)
-                .setLargeIcon(smallIcon?.toBitmap())
+                .setLargeIcon(ContextCompat.getDrawable(context,R.drawable.spy_notify)?.toBitmap())
                 .setContentTitle("你被 tag 了")
                 .setContentText(messageBody)
                 .setColor(ContextCompat.getColor(context, R.color.black))
                 .setAutoCancel(true)
-
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                builder.setSmallIcon(android.R.drawable.stat_notify_error)
+                    .color = ContextCompat.getColor(context, android.R.color.holo_red_light)
+            } else {
+                builder.setSmallIcon(android.R.drawable.stat_notify_error)
+            }
             with(NotificationManagerCompat.from(context)) {
                 // notificationId is a unique int for each notification that you must define
                 notify(Calendar.getInstance().timeInMillis.toInt(), builder.build())
