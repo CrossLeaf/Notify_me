@@ -1,5 +1,6 @@
 package com.eton.notification_me
 
+import android.content.pm.ApplicationInfo
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
@@ -34,11 +35,21 @@ class AppListActivity : AppCompatActivity() {
     }
 
     private fun initData() {
-        val installedApplications = packageManager.getInstalledApplications(0)
-        installedApplications.forEach {
-            Log.d("TAG", "pickNotifyApp: ${it.packageName}")
-            dataArray.add(AppBean(it.loadLabel(packageManager).toString(), it.packageName, it.loadIcon(packageManager), false))
-        }
+        val installedApplications = packageManager.getInstalledPackages(0)
+        installedApplications
+            .filter {
+                (it.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) <= 0
+            }
+            .forEach {
+                dataArray.add(
+                    AppBean(
+                        it.applicationInfo.loadLabel(packageManager).toString(),
+                        it.packageName,
+                        it.applicationInfo.loadIcon(packageManager),
+                        false
+                    )
+                )
+            }
     }
 
     class PackageAdapter(private val dataArray: ArrayList<AppBean>) :
