@@ -27,8 +27,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="新增條件"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/btnPickApp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/recyclerViewCondition" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnPickApp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="選擇要監聽的應用程式"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
