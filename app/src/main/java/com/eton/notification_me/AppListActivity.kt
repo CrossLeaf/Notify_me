@@ -4,6 +4,7 @@ import android.content.pm.ApplicationInfo
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
@@ -27,7 +28,15 @@ class AppListActivity : AppCompatActivity() {
         initView()
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            finish()
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     private fun initView() {
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewAppList)
         recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         recyclerView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
