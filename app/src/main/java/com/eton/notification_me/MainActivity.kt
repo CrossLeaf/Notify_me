@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.text.TextWatcher
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
@@ -123,6 +124,7 @@ open class MainActivity : AppCompatActivity() {
         class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val editText: EditText = view.findViewById(R.id.etCondition)
             val imgRemove: ImageView = view.findViewById(R.id.imgRemove)
+            var watcher: TextWatcher? = null
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -134,10 +136,11 @@ open class MainActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             holder.editText.apply {
+                isFocusable = true
+                isFocusableInTouchMode = true
                 setText(dataArray[position])
-                doAfterTextChanged {
-                    if (this.hasFocus())
-                        dataArray[position] = it.toString()
+                holder.watcher = this.doAfterTextChanged {
+                    dataArray[position] = it.toString()
                 }
             }
             holder.imgRemove.setOnClickListener {
