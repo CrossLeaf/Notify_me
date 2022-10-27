@@ -37,12 +37,15 @@ class AppListActivity : AppCompatActivity() {
 
     private fun initData() {
         spUtil = SpUtil(this)
-        packageNameSet.addAll(spUtil.getPackageName() ?: mutableSetOf())
+        packageNameSet.addAll(spUtil.getPackageName())
 
         val installedApplications = packageManager.getInstalledPackages(0)
         installedApplications
             .filter {
                 (it.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) <= 0
+                        // 判斷是否是自己的 app, 是的話就不顯示
+                        && !(it.packageName?.contentEquals(this.applicationContext.packageName)
+                    ?: false)
             }
             .forEach {
                 dataArray.add(

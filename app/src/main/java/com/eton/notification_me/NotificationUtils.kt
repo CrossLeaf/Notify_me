@@ -31,13 +31,12 @@ open class NotificationUtils {
         smallIcon: Drawable?
     ) {
         Log.d("TAG", "sendNotification: packageName? $packageName")
-        // TODO: 之後可以設定從選單抓取要監聽的app
-        if (packageName == context.applicationContext.packageName
-            || (!packageName.contains("skype") && !packageName.contains("qchat"))
-        ) {
+        val spUtil = SpUtil(context)
+        // 僅送出被選中的 app
+        if ( !spUtil.getPackageName().contains(packageName)) {
             return
         }
-        SpUtil(context).getCondition()?.let { conditionSet ->
+        spUtil.getCondition()?.let { conditionSet ->
             conditionSet.any {
                 messageBody.contains(it, true)
             }.run {

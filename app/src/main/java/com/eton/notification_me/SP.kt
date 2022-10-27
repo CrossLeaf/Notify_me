@@ -28,8 +28,8 @@ class SpUtil(context: Context) {
         sp.edit().putStringSet(CONDITION_KEY, conditionSet).apply()
     }
 
-    fun getPackageName(): MutableSet<String>? {
-        return sp.getStringSet(PACKAGE_NAME_KEY, buildSet {})
+    fun getPackageName(): MutableSet<String> {
+        return sp.getStringSet(PACKAGE_NAME_KEY, buildSet {}) ?: mutableSetOf()
     }
 
     fun editPackageName(packageNameSet: Set<String>) {
