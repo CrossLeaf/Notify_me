@@ -2,15 +2,15 @@ package com.eton.notification_me
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.eton.notification_me.SpUtil.SP.SP_NAME
-import java.sql.Array
 
 class SpUtil(context: Context) {
-    object SP {
+    companion object SP {
         const val SP_NAME = "Condition"
+        const val CONDITION_KEY = "condition_key"
+        const val PACKAGE_NAME_KEY = "package_name_key"
     }
 
-    lateinit var  sp: SharedPreferences
+    private lateinit var sp: SharedPreferences
 
     init {
         getSP(context)
@@ -21,10 +21,18 @@ class SpUtil(context: Context) {
     }
 
     fun getCondition(): MutableSet<String>? {
-        return sp.getStringSet(MainActivity.CONDITION_KEY, buildSet {})
+        return sp.getStringSet(CONDITION_KEY, buildSet {})
     }
 
-    fun editCondition(conditionArray: Set<String>) {
-        sp.edit().putStringSet(MainActivity.CONDITION_KEY, conditionArray).apply()
+    fun editCondition(conditionSet: Set<String>) {
+        sp.edit().putStringSet(CONDITION_KEY, conditionSet).apply()
+    }
+
+    fun getPackageName(): MutableSet<String>? {
+        return sp.getStringSet(PACKAGE_NAME_KEY, buildSet {})
+    }
+
+    fun editPackageName(packageNameSet: Set<String>) {
+        sp.edit().putStringSet(PACKAGE_NAME_KEY, packageNameSet).apply()
     }
 }

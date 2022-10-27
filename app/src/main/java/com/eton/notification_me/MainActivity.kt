@@ -21,9 +21,6 @@ import androidx.recyclerview.widget.RecyclerView
 
 
 open class MainActivity : AppCompatActivity() {
-    companion object {
-        const val CONDITION_KEY = "condition_key"
-    }
 
     var conditionArray = arrayListOf<String>()
     private lateinit var spUtil: SpUtil

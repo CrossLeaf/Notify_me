@@ -3,7 +3,6 @@ package com.eton.notification_me
 import android.content.pm.ApplicationInfo
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +17,8 @@ import androidx.recyclerview.widget.RecyclerView
 class AppListActivity : AppCompatActivity() {
     lateinit var adapter: PackageAdapter
     var dataArray = arrayListOf<AppBean>()
+    lateinit var spUtil: SpUtil
+    val packageNameSet = mutableSetOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,7 +27,7 @@ class AppListActivity : AppCompatActivity() {
         initView()
     }
 
-    fun initView() {
+    private fun initView() {
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewAppList)
         recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         recyclerView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
@@ -35,6 +36,9 @@ class AppListActivity : AppCompatActivity() {
     }
 
     private fun initData() {
+        spUtil = SpUtil(this)
+        packageNameSet.addAll(spUtil.getPackageName() ?: mutableSetOf())
+
         val installedApplications = packageManager.getInstalledPackages(0)
         installedApplications
             .filter {
@@ -46,15 +50,15 @@ class AppListActivity : AppCompatActivity() {
                         it.applicationInfo.loadLabel(packageManager).toString(),
                         it.packageName,
                         it.applicationInfo.loadIcon(packageManager),
-                        false
+                        packageNameSet.contains(it.packageName)
                     )
                 )
             }
     }
 
-    class PackageAdapter(private val dataArray: ArrayList<AppBean>) :
+    inner class PackageAdapter(private val dataArray: ArrayList<AppBean>) :
         RecyclerView.Adapter<PackageAdapter.ViewHolder>() {
-        class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val imgIcon: ImageView = view.findViewById(R.id.imgIcon)
             val checkBox: CheckBox = view.findViewById(R.id.checkBox)
             val tvName: TextView = view.findViewById(R.id.tvName)
@@ -68,11 +72,22 @@ class AppListActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             holder.apply {
-                checkBox.isChecked = dataArray[position].check
-                imgIcon.setImageDrawable(dataArray[position].icon)
-                tvName.text = dataArray[position].label
+                dataArray[position].also {
+                    checkBox.isChecked = it.check
+                    imgIcon.setImageDrawable(it.icon)
+                    tvName.text = it.label
+                    checkBox.setOnClickListener { view ->
+                        val isChecked = (view as CheckBox).isChecked
+                        it.check = isChecked
+                        if (isChecked) {
+                            packageNameSet.add(it.packageName)
+                        } else {
+                            packageNameSet.remove(it.packageName)
+                        }
+                        spUtil.editPackageName(packageNameSet)
+                    }
+                }
             }
-            // TODO: 儲存所選的 app package name
         }
 
         override fun getItemCount(): Int {
