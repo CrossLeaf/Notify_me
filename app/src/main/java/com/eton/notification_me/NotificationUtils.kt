@@ -9,7 +9,6 @@ import android.media.AudioAttributes
 import android.net.Uri
 import android.os.Build
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -20,7 +19,7 @@ import java.util.*
 open class NotificationUtils {
     companion object {
         const val CHANNEL_ID = "work"
-        var condition = arrayListOf<String>()
+//        var condition = arrayListOf<String>()
     }
 
     private var notificationManager: NotificationManager? = null
@@ -38,30 +37,33 @@ open class NotificationUtils {
         ) {
             return
         }
-
-        condition.any {
-            messageBody.contains(it, true)
-        }.run {
-            Log.d("TAG", "sendNotification: match? $this")
-            if (!this) {
-                // 條件不對不執行
-                return
-            }
-            val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-                .setLargeIcon(ContextCompat.getDrawable(context,R.drawable.spy_notify)?.toBitmap())
-                .setContentTitle("你被 tag 了")
-                .setContentText(messageBody)
-                .setColor(ContextCompat.getColor(context, R.color.black))
-                .setAutoCancel(true)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                builder.setSmallIcon(android.R.drawable.stat_notify_error)
-                    .color = ContextCompat.getColor(context, android.R.color.holo_red_light)
-            } else {
-                builder.setSmallIcon(android.R.drawable.stat_notify_error)
-            }
-            with(NotificationManagerCompat.from(context)) {
-                // notificationId is a unique int for each notification that you must define
-                notify(Calendar.getInstance().timeInMillis.toInt(), builder.build())
+        SpUtil(context).getCondition()?.let { conditionSet ->
+            conditionSet.any {
+                messageBody.contains(it, true)
+            }.run {
+                Log.d("TAG", "sendNotification: match? $this")
+                if (!this) {
+                    // 條件不對不執行
+                    return
+                }
+                val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+                    .setLargeIcon(
+                        ContextCompat.getDrawable(context, R.drawable.spy_notify)?.toBitmap()
+                    )
+                    .setContentTitle("你被 tag 了")
+                    .setContentText(messageBody)
+                    .setColor(ContextCompat.getColor(context, R.color.black))
+                    .setAutoCancel(true)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    builder.setSmallIcon(android.R.drawable.stat_notify_error)
+                        .color = ContextCompat.getColor(context, android.R.color.holo_red_light)
+                } else {
+                    builder.setSmallIcon(android.R.drawable.stat_notify_error)
+                }
+                with(NotificationManagerCompat.from(context)) {
+                    // notificationId is a unique int for each notification that you must define
+                    notify(Calendar.getInstance().timeInMillis.toInt(), builder.build())
+                }
             }
         }
     }

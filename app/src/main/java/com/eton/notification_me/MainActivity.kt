@@ -4,11 +4,8 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
@@ -29,20 +26,16 @@ open class MainActivity : AppCompatActivity() {
     }
 
     var conditionArray = arrayListOf<String>()
-    private lateinit var pref: SharedPreferences
+    private lateinit var spUtil: SpUtil
     lateinit var adapter: ConditionAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         NotificationUtils().createNotificationChannel(this)
-
-        getSP()
-        val stringSet: MutableSet<String> =
-            pref.getStringSet(CONDITION_KEY, buildSet {}) as MutableSet<String>
+        spUtil = SpUtil(this)
+        val stringSet: MutableSet<String> = spUtil.getCondition() ?: mutableSetOf()
         conditionArray = stringSet.toMutableList() as ArrayList<String>
-        // 通知條件設定
-        NotificationUtils.condition = conditionArray
 
         initView()
     }
@@ -105,10 +98,6 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getSP() {
-        pref = this.getSharedPreferences("Condition", Context.MODE_PRIVATE)
-    }
-
     /**
      * 儲存條件
      */
@@ -122,10 +111,8 @@ open class MainActivity : AppCompatActivity() {
         conditionArray.clear()
         conditionArray.addAll(temp)
         // 保存至 Sp
-        pref.edit().putStringSet(CONDITION_KEY, conditionArray.toSet()).apply()
-        // 通知條件設定
-        NotificationUtils.condition = conditionArray
-        // 顯示保存成功 toast
+        spUtil.editCondition(conditionArray.toSet())
+        // 顯示保存成功 toast/
         Toast.makeText(this, "保存成功", Toast.LENGTH_SHORT).show()
     }
 
