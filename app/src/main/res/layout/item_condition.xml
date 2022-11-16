@@ -4,12 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <androidx.appcompat.widget.AppCompatEditText
+    <EditText
         android:id="@+id/etCondition"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="請輸入條件"
-        android:focusableInTouchMode="true"
+        android:imeOptions="actionDone"
+        android:inputType="text"
         app:layout_constraintEnd_toStartOf="@+id/imgRemove"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

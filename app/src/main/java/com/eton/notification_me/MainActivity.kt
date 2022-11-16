@@ -136,8 +136,6 @@ open class MainActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             holder.editText.apply {
-                isFocusable = true
-                isFocusableInTouchMode = true
                 setText(dataArray[position])
                 holder.watcher = this.doAfterTextChanged {
                     dataArray[position] = it.toString()
