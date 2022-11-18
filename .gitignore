@@ -82,3 +82,5 @@ lint/tmp/
 # lint/reports/
 
 .idea/
+
+.DS_Store
