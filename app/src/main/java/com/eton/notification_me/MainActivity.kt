@@ -13,13 +13,13 @@ import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.app.NotificationManagerCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 
 
 open class MainActivity : AppCompatActivity() {
@@ -110,8 +110,8 @@ open class MainActivity : AppCompatActivity() {
         conditionArray.addAll(temp)
         // 保存至 Sp
         spUtil.editCondition(conditionArray.toSet())
-        // 顯示保存成功 toast/
-        Toast.makeText(this, "保存成功", Toast.LENGTH_SHORT).show()
+        // 顯示保存成功 Snackbar/
+        Snackbar.make(findViewById(R.id.parentView), "保存成功", Snackbar.LENGTH_SHORT).show()
     }
 
     private fun isPurview(context: Context): Boolean { // 檢查權限是否開啟 true = 開啟 ，false = 未開啟
