@@ -1,11 +1,13 @@
 package com.eton.notification_me
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.text.Editable
 import android.text.TextWatcher
 import android.view.*
 import android.view.inputmethod.InputMethodManager
@@ -16,7 +18,6 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
@@ -101,8 +102,7 @@ open class MainActivity : AppCompatActivity() {
      */
     @RequiresApi(Build.VERSION_CODES.N)
     private fun saveCondition() {
-        val temp = arrayListOf<String>()
-        temp.addAll(conditionArray)
+        val temp = conditionArray.toMutableList()
         temp.removeIf {
             it.isEmpty()
         }
@@ -121,10 +121,11 @@ open class MainActivity : AppCompatActivity() {
 
     class ConditionAdapter(private val dataArray: ArrayList<String>) :
         RecyclerView.Adapter<ConditionAdapter.ViewHolder>() {
-        class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+
+        class ViewHolder(view: View) :
+            RecyclerView.ViewHolder(view) {
             val editText: EditText = view.findViewById(R.id.etCondition)
             val imgRemove: ImageView = view.findViewById(R.id.imgRemove)
-            var watcher: TextWatcher? = null
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -134,11 +135,30 @@ open class MainActivity : AppCompatActivity() {
             return ViewHolder(view)
         }
 
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        override fun onBindViewHolder(
+            holder: ViewHolder,
+            @SuppressLint("RecyclerView") position: Int
+        ) {
+            val textWatcher = object : TextWatcher {
+                override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+
+                }
+
+                override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                }
+
+                override fun afterTextChanged(editable: Editable?) {
+                    dataArray[position] = editable.toString()
+                }
+            }
             holder.editText.apply {
                 setText(dataArray[position])
-                holder.watcher = this.doAfterTextChanged {
-                    dataArray[position] = it.toString()
+                this.setOnFocusChangeListener { _, hasFocus ->
+                    if (hasFocus) {
+                        this.addTextChangedListener(textWatcher)
+                    } else {
+                        this.removeTextChangedListener(textWatcher)
+                    }
                 }
             }
             holder.imgRemove.setOnClickListener {
