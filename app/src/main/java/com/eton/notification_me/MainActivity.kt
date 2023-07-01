@@ -27,6 +27,7 @@ open class MainActivity : AppCompatActivity() {
     var conditionArray = arrayListOf<String>()
     private lateinit var spUtil: SpUtil
     lateinit var adapter: ConditionAdapter
+    private var alertDialog: AlertDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +43,12 @@ open class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         if (!isPurview(this)) { // 檢查權限是否開啟，未開啟則開啟對話框
-            AlertDialog.Builder(this@MainActivity)
+            alertDialog?.dismiss()
+            if (alertDialog != null) {
+                alertDialog?.show()
+                return
+            }
+            alertDialog = AlertDialog.Builder(this@MainActivity)
                 .setTitle(R.string.app_name)
                 .setMessage("請啟用通知欄擷取權限")
                 .setIcon(R.mipmap.ic_launcher_round)
@@ -55,7 +61,8 @@ open class MainActivity : AppCompatActivity() {
                     // 對話框按鈕事件
                     // 跳轉自開啟權限畫面，權限開啟後通知欄擷取服務將自動啟動。
                     startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
-                }.show()
+                }.create()
+            alertDialog?.show()
         }
     }
 
