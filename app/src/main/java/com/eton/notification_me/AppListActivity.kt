@@ -48,8 +48,7 @@ class AppListActivity : AppCompatActivity() {
         spUtil = SpUtil(this)
         packageNameSet.addAll(spUtil.getPackageName())
 
-        val installedApplications = packageManager.getInstalledPackages(0)
-        installedApplications
+        packageManager.getInstalledPackages(0)
             .filter {
                 (it.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) <= 0
                         // 判斷是否是自己的 app, 是的話就不顯示
