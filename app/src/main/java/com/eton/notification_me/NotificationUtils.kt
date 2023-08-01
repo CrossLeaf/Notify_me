@@ -4,6 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.ContentResolver
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.media.AudioAttributes
 import android.net.Uri
@@ -49,7 +50,7 @@ open class NotificationUtils {
                     .setLargeIcon(
                         ContextCompat.getDrawable(context, R.drawable.spy_notify)?.toBitmap()
                     )
-                    .setContentTitle("你被 tag 了")
+                    .setContentTitle("你被 tag 了 - ${getLabel(context, packageName)}")
                     .setContentText(messageBody)
                     .setColor(ContextCompat.getColor(context, R.color.black))
                     .setAutoCancel(true)
@@ -96,4 +97,23 @@ open class NotificationUtils {
         }
     }
 
+    /**
+     * 取得應用程式名稱
+     * @param context Context
+     * @param packageName 包名
+     * @return 應用程式名稱
+     */
+    private fun getLabel(context: Context, packageName: String) : String{
+        val packageManager = context.packageManager
+        return try {
+            val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
+            val applicationLabel = packageManager.getApplicationLabel(applicationInfo).toString()
+
+            applicationLabel
+        } catch (e: PackageManager.NameNotFoundException) {
+            // 找不到指定套件名稱的應用程式
+            e.printStackTrace()
+            packageName
+        }
+    }
 }
