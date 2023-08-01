@@ -48,14 +48,14 @@ class AppListActivity : AppCompatActivity() {
         spUtil = SpUtil(this)
         packageNameSet.addAll(spUtil.getPackageName())
 
-        val installedApplications = packageManager.getInstalledPackages(0)
-        installedApplications
+        packageManager.getInstalledPackages(0)
             .filter {
                 (it.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) <= 0
                         // 判斷是否是自己的 app, 是的話就不顯示
                         && !(it.packageName?.contentEquals(this.applicationContext.packageName)
                     ?: false)
             }
+            .sortedBy { it.applicationInfo.loadLabel(packageManager).toString() } // 按照應用程式名稱排序
             .forEach {
                 dataArray.add(
                     AppBean(
