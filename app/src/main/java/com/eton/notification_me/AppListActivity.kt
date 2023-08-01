@@ -55,6 +55,7 @@ class AppListActivity : AppCompatActivity() {
                         && !(it.packageName?.contentEquals(this.applicationContext.packageName)
                     ?: false)
             }
+            .sortedBy { it.applicationInfo.loadLabel(packageManager).toString() } // 按照應用程式名稱排序
             .forEach {
                 dataArray.add(
                     AppBean(
