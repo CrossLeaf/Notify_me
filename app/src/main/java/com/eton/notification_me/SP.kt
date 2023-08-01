@@ -25,7 +25,7 @@ class SpUtil(context: Context) {
     }
 
     fun editCondition(conditionSet: Set<String>) {
-        sp.edit().putStringSet(CONDITION_KEY, conditionSet).apply()
+        sp.edit().putStringSet(CONDITION_KEY, conditionSet).commit()
     }
 
     fun getPackageName(): MutableSet<String> {
