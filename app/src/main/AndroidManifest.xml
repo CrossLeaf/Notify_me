@@ -10,8 +10,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Notification_me">
         <activity
+            android:name=".NotificationVolumeActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"/>
+        <activity
             android:name=".AppListActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
 
         <meta-data
             android:name="com.eton.notification_me.smallicon"

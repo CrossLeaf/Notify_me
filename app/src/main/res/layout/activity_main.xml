@@ -20,15 +20,15 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0"
         app:layout_constraintVertical_chainStyle="packed"
-        tools:itemCount="20"
+        tools:itemCount="2"
         tools:listitem="@layout/item_condition" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnAdd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="新增條件"
         android:layout_marginBottom="8dp"
+        android:text="新增條件"
         app:layout_constraintBottom_toTopOf="@+id/btnPickApp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -39,7 +39,18 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="選擇要監聽的應用程式"
+        app:layout_constraintBottom_toTopOf="@+id/btnSetNotificationVolume"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnAdd" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnSetNotificationVolume"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="設定通知聲音自動化處理"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnPickApp" />
 </androidx.constraintlayout.widget.ConstraintLayout>
