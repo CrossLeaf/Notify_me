@@ -1,8 +1,11 @@
 package com.eton.notification_me
 
+import android.app.ActivityManager
 import android.content.Context
+import android.content.Intent
 import android.database.ContentObserver
 import android.media.AudioManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -10,6 +13,7 @@ import android.provider.Settings
 import android.view.MenuItem
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SwitchCompat
 
 class NotificationVolumeActivity : AppCompatActivity() {
     // 定義 AudioManager 來控制音量
@@ -60,6 +64,24 @@ class NotificationVolumeActivity : AppCompatActivity() {
         contentResolver.registerContentObserver(
             Settings.System.CONTENT_URI, true, volumeObserver
         )
+        val isRunning = isServiceRunning(this, WifiVolumeService::class.java)
+        findViewById<SwitchCompat>(R.id.switchAutoAdjustVolume).apply {
+            isChecked = isRunning
+
+            setOnCheckedChangeListener { compoundButton, isChecked ->
+                if (!compoundButton.isPressed) return@setOnCheckedChangeListener
+
+                if (isChecked) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        startForegroundService(Intent(context, WifiVolumeService::class.java))
+                    } else {
+                        startService(Intent(context, WifiVolumeService::class.java))
+                    }
+                } else {
+                    stopService(Intent(context, WifiVolumeService::class.java))
+                }
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -91,5 +113,15 @@ class NotificationVolumeActivity : AppCompatActivity() {
             currentVolume = newVolume
             seekBar.progress = currentVolume
         }
+    }
+
+    fun isServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
+        val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        for (service in manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.name == service.service.className) {
+                return true
+            }
+        }
+        return false
     }
 }
