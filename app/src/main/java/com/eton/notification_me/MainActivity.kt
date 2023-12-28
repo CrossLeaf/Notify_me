@@ -102,6 +102,9 @@ open class MainActivity : AppCompatActivity() {
         findViewById<AppCompatButton>(R.id.btnPickApp).setOnClickListener {
             startActivity(Intent(this, AppListActivity::class.java))
         }
+        findViewById<AppCompatButton>(R.id.btnSetNotificationVolume).setOnClickListener {
+            startActivity(Intent(this, NotificationVolumeActivity::class.java))
+        }
     }
 
     /**
