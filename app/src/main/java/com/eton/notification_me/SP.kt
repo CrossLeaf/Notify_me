@@ -4,10 +4,11 @@ import android.content.Context
 import android.content.SharedPreferences
 
 class SpUtil(context: Context) {
-    companion object SP {
+    private companion object SP {
         const val SP_NAME = "Condition"
         const val CONDITION_KEY = "condition_key"
         const val PACKAGE_NAME_KEY = "package_name_key"
+        const val MESSAGE_BODY_KEY = "message_body_key"
     }
 
     private lateinit var sp: SharedPreferences
@@ -34,5 +35,19 @@ class SpUtil(context: Context) {
 
     fun editPackageName(packageNameSet: Set<String>) {
         sp.edit().putStringSet(PACKAGE_NAME_KEY, packageNameSet).apply()
+    }
+
+    /**
+     * 獲取訊息內容
+     */
+    fun getMessageBody(): String {
+        return sp.getString(MESSAGE_BODY_KEY, "") ?: ""
+    }
+
+    /**
+     * 編輯訊息內容
+     */
+    fun editMessageBody(messageBody: String) {
+        sp.edit().putString(MESSAGE_BODY_KEY, messageBody).apply()
     }
 }

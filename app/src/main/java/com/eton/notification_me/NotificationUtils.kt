@@ -40,9 +40,11 @@ open class NotificationUtils {
         spUtil.getCondition()?.let { conditionSet ->
             conditionSet.any {
                 messageBody.contains(it, true)
-            }.run {
-                Log.d("TAG", "sendNotification: match? $this")
-                if (!this) {
+            }.also { isMatch ->
+                Log.d("TAG", "sendNotification: match? $isMatch")
+                val isSend = spUtil.getMessageBody().contentEquals(messageBody, true)
+                Log.d("TAG", "sendNotification: isSend? $isSend")
+                if (!isMatch || isSend) {
                     // 條件不對不執行
                     return
                 }
@@ -61,8 +63,11 @@ open class NotificationUtils {
                     builder.setSmallIcon(android.R.drawable.stat_notify_error)
                 }
                 with(NotificationManagerCompat.from(context)) {
+                    SpUtil(context).editMessageBody(messageBody)
                     // notificationId is a unique int for each notification that you must define
-                    notify(Calendar.getInstance().timeInMillis.toInt(), builder.build())
+                     Calendar.getInstance().timeInMillis.toInt().let {notificationId ->
+                         notify(notificationId, builder.build())
+                    }
                 }
             }
         }
