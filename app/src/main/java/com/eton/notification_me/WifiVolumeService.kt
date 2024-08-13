@@ -26,7 +26,11 @@ class WifiVolumeService : Service() {
     override fun onCreate() {
         super.onCreate()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel("WifiVolumeService", "Wifi Volume Service", NotificationManager.IMPORTANCE_LOW)
+            val channel = NotificationChannel(
+                "WifiVolumeService",
+                "Wifi Volume Service",
+                NotificationManager.IMPORTANCE_LOW
+            )
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
 
@@ -45,7 +49,11 @@ class WifiVolumeService : Service() {
 
             override fun onLost(network: Network) {
                 // Wi-Fi is disconnected, max the volume
-                audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION), 0)
+                audioManager.setStreamVolume(
+                    AudioManager.STREAM_NOTIFICATION,
+                    audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION),
+                    0
+                )
             }
         }
 
