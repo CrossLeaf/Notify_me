@@ -3,6 +3,7 @@ package com.eton.notification_me
 import android.content.pm.ApplicationInfo
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -57,6 +58,7 @@ class AppListActivity : AppCompatActivity() {
             }
             .sortedBy { it.applicationInfo.loadLabel(packageManager).toString() } // 按照應用程式名稱排序
             .forEach {
+                Log.d("TAG", "initData: ${it.applicationInfo.loadLabel(packageManager)}")
                 dataArray.add(
                     AppBean(
                         it.applicationInfo.loadLabel(packageManager).toString(),
@@ -69,41 +71,63 @@ class AppListActivity : AppCompatActivity() {
     }
 
     inner class PackageAdapter(private val dataArray: ArrayList<AppBean>) :
-        RecyclerView.Adapter<PackageAdapter.ViewHolder>() {
-        inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+        private val VIEW_TYPE_ITEM = 0
+        private val VIEW_TYPE_FOOTER = 1
+
+        inner class ItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val imgIcon: ImageView = view.findViewById(R.id.imgIcon)
             val checkBox: CheckBox = view.findViewById(R.id.checkBox)
             val tvName: TextView = view.findViewById(R.id.tvName)
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_app_list, parent, false)
-            return ViewHolder(view)
+        inner class FooterViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            val footerText: TextView = view.findViewById(R.id.footerText)
         }
 
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.apply {
-                dataArray[position].also {
-                    checkBox.isChecked = it.check
-                    imgIcon.setImageDrawable(it.icon)
-                    tvName.text = it.label
-                    checkBox.setOnClickListener { view ->
-                        val isChecked = (view as CheckBox).isChecked
-                        it.check = isChecked
-                        if (isChecked) {
-                            packageNameSet.add(it.packageName)
-                        } else {
-                            packageNameSet.remove(it.packageName)
+        override fun getItemViewType(position: Int): Int {
+            return if (position == dataArray.size) VIEW_TYPE_FOOTER else VIEW_TYPE_ITEM
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+            return if (viewType == VIEW_TYPE_ITEM) {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_app_list, parent, false)
+                ItemViewHolder(view)
+            } else {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_footer, parent, false)
+                FooterViewHolder(view)
+            }
+        }
+
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            if (holder is ItemViewHolder) {
+                holder.apply {
+                    dataArray[position].also {
+                        checkBox.isChecked = it.check
+                        imgIcon.setImageDrawable(it.icon)
+                        tvName.text = it.label
+                        checkBox.setOnClickListener { view ->
+                            val isChecked = (view as CheckBox).isChecked
+                            it.check = isChecked
+                            if (isChecked) {
+                                packageNameSet.add(it.packageName)
+                            } else {
+                                packageNameSet.remove(it.packageName)
+                            }
+                            spUtil.editPackageName(packageNameSet)
                         }
-                        spUtil.editPackageName(packageNameSet)
                     }
                 }
+            } else if (holder is FooterViewHolder) {
+                holder.footerText.text = "No more data"
             }
         }
 
         override fun getItemCount(): Int {
-            return dataArray.size
+            return dataArray.size + 1
         }
     }
 }
