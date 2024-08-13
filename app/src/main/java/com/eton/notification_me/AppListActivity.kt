@@ -1,6 +1,8 @@
 package com.eton.notification_me
 
+import android.annotation.SuppressLint
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
@@ -49,7 +51,7 @@ class AppListActivity : AppCompatActivity() {
         spUtil = SpUtil(this)
         packageNameSet.addAll(spUtil.getPackageName())
 
-        packageManager.getInstalledPackages(0)
+        packageManager.getInstalledPackages(PackageManager.GET_META_DATA)
             .filter {
                 (it.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) <= 0
                         // 判斷是否是自己的 app, 是的話就不顯示
