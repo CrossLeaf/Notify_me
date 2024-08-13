@@ -4,6 +4,9 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
     <queries>
         <!-- If you need to query all apps that provide a specific intent -->
         <intent>
@@ -22,11 +25,11 @@
         <activity
             android:name=".NotificationVolumeActivity"
             android:exported="false"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".AppListActivity"
             android:exported="false"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
 
         <meta-data
             android:name="com.eton.notification_me.smallicon"
@@ -46,13 +49,16 @@
         <service
             android:name=".NotificationMonitorService"
             android:exported="true"
+            android:foregroundServiceType="remoteMessaging"
             android:label="NotificationMonitor"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
-        <service android:name=".WifiVolumeService" />
+        <service
+            android:name=".WifiVolumeService"
+            android:foregroundServiceType="specialUse" />
     </application>
 
 </manifest>
