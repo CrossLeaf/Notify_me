@@ -1,10 +1,12 @@
 package com.eton.notification_me
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -13,10 +15,12 @@ import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
@@ -28,7 +32,18 @@ open class MainActivity : AppCompatActivity() {
     private lateinit var spUtil: SpUtil
     lateinit var adapter: ConditionAdapter
     private var alertDialog: AlertDialog? = null
-
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission is granted. Continue with the action or workflow in your app.
+            Snackbar.make(findViewById(R.id.parentView), "Notification permission granted", Snackbar.LENGTH_SHORT).show()
+        } else {
+            // Explain to the user that the feature is unavailable because the
+            // features requires a permission that the user has denied.
+            Snackbar.make(findViewById(R.id.parentView), "Notification permission denied", Snackbar.LENGTH_SHORT).show()
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -126,6 +141,28 @@ open class MainActivity : AppCompatActivity() {
 
     private fun isPurview(context: Context): Boolean { // 檢查權限是否開啟 true = 開啟 ，false = 未開啟
         val packageNames = NotificationManagerCompat.getEnabledListenerPackages(context)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    // You can use the API that requires the permission.
+                }
+                shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
+                    // In an educational UI, explain to the user why your app requires this
+                    // permission for a specific feature to behave as expected.
+                    Snackbar.make(findViewById(R.id.parentView), "Notification permission is required to send notifications", Snackbar.LENGTH_INDEFINITE)
+                        .setAction("OK") {
+                            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }.show()
+                }
+                else -> {
+                    // Directly ask for the permission
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        }
         return packageNames.contains(context.packageName)
     }
 
