@@ -15,6 +15,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import java.util.*
+import com.eton.notification_me.util.LogManager
 
 
 open class NotificationUtils {
@@ -31,15 +32,21 @@ open class NotificationUtils {
         messageBody: String,
         smallIcon: Drawable?
     ) {
+        val logManager = LogManager.getInstance()
+        
         Log.d("NotificationUtils", "=== 開始處理通知 ===")
         Log.d("NotificationUtils", "Package: $packageName")
         Log.d("NotificationUtils", "Message: $messageBody")
+        
+        logManager.addLog("開始處理通知 - 包名: $packageName", "INFO")
+        logManager.addNotificationLog("訊息內容: $messageBody", "DEBUG")
         
         val spUtil = SpUtil(context)
         
         // 僅送出被選中的 app
         if (!spUtil.getPackageName().contains(packageName)) {
             Log.d("NotificationUtils", "應用程式未被選中，跳過處理")
+            logManager.addLog("應用程式未被選中，跳過處理: $packageName", "INFO")
             return
         }
         
@@ -47,6 +54,7 @@ open class NotificationUtils {
         if (packageName == "org.telegram.messenger") {
             if (isTelegramSummaryNotification(messageBody)) {
                 Log.d("NotificationUtils", "Telegram 摘要通知，跳過處理")
+                logManager.addNotificationLog("Telegram 摘要通知，跳過處理: $messageBody", "INFO")
                 return
             }
         }
@@ -59,11 +67,13 @@ open class NotificationUtils {
                 // 如果條件不符合，直接返回
                 if (!isMatch) {
                     Log.d("TAG", "sendNotification: 條件不符合，跳過處理")
+                    logManager.addNotificationLog("條件不符合，跳過處理: $messageBody", "INFO")
                     return
                 }
                 
                 // 記錄訊息（移除重複檢查，像聊天軟體一樣處理每次訊息）
                 Log.d("NotificationUtils", "處理訊息: $messageBody")
+                logManager.addNotificationLog("關鍵字匹配，準備發送通知: $messageBody", "INFO")
                 
                 // 記錄當前時間
                 val currentTime = System.currentTimeMillis()
@@ -109,12 +119,14 @@ open class NotificationUtils {
                         Log.d("NotificationUtils", "🔊 手動播放通知聲音")
                     } catch (e: Exception) {
                         Log.e("NotificationUtils", "播放通知聲音失敗: ${e.message}")
+                        logManager.addLog("播放通知聲音失敗: ${e.message}", "ERROR")
                     }
                     
                     // 更新最後通知時間
                     spUtil.setLastNotificationTime(currentTime)
                     
                     Log.d("NotificationUtils", "🔔 通知已發送，ID: $uniqueId, 時間: $timestamp")
+                    logManager.addLog("✅ 通知已發送 - ID: $uniqueId, 時間: $timestamp", "INFO")
                 }
             }
         }

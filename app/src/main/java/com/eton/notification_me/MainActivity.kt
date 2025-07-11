@@ -24,6 +24,14 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import com.eton.notification_me.util.LogManager
+import android.widget.TextView
+import android.widget.Button
+import android.widget.ScrollView
+import android.os.Handler
+import android.os.Looper
+import android.text.Html
+import android.text.Spanned
 
 
 open class MainActivity : AppCompatActivity() {
@@ -32,6 +40,17 @@ open class MainActivity : AppCompatActivity() {
     private lateinit var spUtil: SpUtil
     lateinit var adapter: ConditionAdapter
     private var alertDialog: AlertDialog? = null
+    private lateinit var logManager: LogManager
+    private lateinit var tvLogs: TextView
+    private lateinit var tvLogCount: TextView
+    private lateinit var scrollView: ScrollView
+    private val logUpdateHandler = Handler(Looper.getMainLooper())
+    private val logUpdateRunnable = object : Runnable {
+        override fun run() {
+            updateLogDisplay()
+            logUpdateHandler.postDelayed(this, 2000) // 每2秒更新一次
+        }
+    }
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
@@ -52,7 +71,15 @@ open class MainActivity : AppCompatActivity() {
         val stringSet: MutableSet<String> = spUtil.getCondition() ?: mutableSetOf()
         conditionArray = stringSet.toMutableList() as ArrayList<String>
 
+        // 初始化 LogManager
+        logManager = LogManager.getInstance()
+        logManager.addLog("MainActivity 啟動", "INFO")
+        logManager.loadLogsFromFile(this)
+
         initView()
+        
+        // 開始自動更新日誌顯示
+        logUpdateHandler.post(logUpdateRunnable)
     }
 
     override fun onResume() {
@@ -120,6 +147,75 @@ open class MainActivity : AppCompatActivity() {
         findViewById<AppCompatButton>(R.id.btnSetNotificationVolume).setOnClickListener {
             startActivity(Intent(this, NotificationVolumeActivity::class.java))
         }
+        
+        // 初始化日誌相關UI
+        tvLogs = findViewById(R.id.tvLogs)
+        tvLogCount = findViewById(R.id.tvLogCount)
+        scrollView = findViewById(R.id.scrollViewLogs)
+        
+        // 清除日誌按鈕
+        findViewById<Button>(R.id.btnClearLogs).setOnClickListener {
+            logManager.clearLogs()
+            logManager.addLog("手動清除日誌", "INFO")
+            updateLogDisplay()
+        }
+        
+        // 保存日誌按鈕
+        findViewById<Button>(R.id.btnSaveLogs).setOnClickListener {
+            val success = logManager.saveLogsToFile(this)
+            if (success) {
+                Snackbar.make(findViewById(R.id.parentView), "日誌已保存", Snackbar.LENGTH_SHORT).show()
+            } else {
+                Snackbar.make(findViewById(R.id.parentView), "日誌保存失敗", Snackbar.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    /**
+     * 更新日誌顯示
+     */
+    private fun updateLogDisplay() {
+        val logs = logManager.getAllLogs()
+        val logText = logs.joinToString("<br>")
+        
+        // 保存當前滾動位置
+        val currentScrollY = scrollView.scrollY
+        
+        if (logText.isNotEmpty()) {
+            val spanned: Spanned = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                Html.fromHtml(logText, Html.FROM_HTML_MODE_COMPACT)
+            } else {
+                @Suppress("DEPRECATION")
+                Html.fromHtml(logText)
+            }
+            tvLogs.text = spanned
+        } else {
+            tvLogs.text = "日誌將在此處顯示..."
+        }
+        
+        tvLogCount.text = "${logs.size} 條"
+        
+        // 恢復滾動位置，防止自動滾動
+        scrollView.post {
+            scrollView.scrollTo(0, currentScrollY)
+        }
+        
+        // 自動保存（每10次更新保存一次）
+        if (logs.size % 10 == 0 && logs.isNotEmpty()) {
+            logManager.saveLogsToFile(this)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        logUpdateHandler.removeCallbacks(logUpdateRunnable)
+        logManager.saveLogsToFile(this)
+        logManager.addLog("MainActivity 銷毀", "INFO")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        logManager.saveLogsToFile(this)
     }
 
     /**
