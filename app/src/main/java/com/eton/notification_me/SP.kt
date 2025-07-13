@@ -9,6 +9,7 @@ class SpUtil(context: Context) {
         const val CONDITION_KEY = "condition_key"
         const val PACKAGE_NAME_KEY = "package_name_key"
         const val MESSAGE_BODY_KEY = "message_body_key"
+        const val LAST_NOTIFICATION_TIME_KEY = "last_notification_time_key"
     }
 
     private lateinit var sp: SharedPreferences
@@ -49,5 +50,19 @@ class SpUtil(context: Context) {
      */
     fun editMessageBody(messageBody: String) {
         sp.edit().putString(MESSAGE_BODY_KEY, messageBody).apply()
+    }
+
+    /**
+     * 獲取最後通知時間
+     */
+    fun getLastNotificationTime(): Long {
+        return sp.getLong(LAST_NOTIFICATION_TIME_KEY, 0L)
+    }
+
+    /**
+     * 設定最後通知時間
+     */
+    fun setLastNotificationTime(timestamp: Long) {
+        sp.edit().putLong(LAST_NOTIFICATION_TIME_KEY, timestamp).apply()
     }
 }
