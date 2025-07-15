@@ -20,7 +20,9 @@ import com.eton.notification_me.util.LogManager
 
 open class NotificationUtils {
     companion object {
-        const val CHANNEL_ID = "work"
+        const val CHANNEL_ID_BASE = "work"
+        private var lastSoundUri: String? = null
+        private var currentChannelId: String = CHANNEL_ID_BASE
 //        var condition = arrayListOf<String>()
     }
 
@@ -42,6 +44,26 @@ open class NotificationUtils {
         logManager.addNotificationLog("訊息內容: $messageBody", "DEBUG")
         
         val spUtil = SpUtil(context)
+        
+        // 獲取自訂音效設定
+        val customSoundUriString = spUtil.getNotificationSoundUri()
+        val customSoundUri = if (customSoundUriString != null) {
+            Uri.parse(customSoundUriString)
+        } else {
+            // 使用專案內的預設音效
+            Uri.parse("${ContentResolver.SCHEME_ANDROID_RESOURCE}://${context.packageName}/${R.raw.warning}")
+        }
+        
+        Log.d("NotificationUtils", "🎵 使用音效: ${spUtil.getNotificationSoundName()}")
+        Log.d("NotificationUtils", "🎵 音效URI: $customSoundUri")
+        
+        // 檢查音效是否改變，如果改變則創建新的通知頻道
+        if (lastSoundUri != customSoundUri.toString()) {
+            Log.d("NotificationUtils", "🔄 音效已改變，創建新的通知頻道")
+            currentChannelId = "${CHANNEL_ID_BASE}_${System.currentTimeMillis()}"
+            createNotificationChannelWithSound(context, customSoundUri)
+            lastSoundUri = customSoundUri.toString()
+        }
         
         // 僅送出被選中的 app
         if (!spUtil.getPackageName().contains(packageName)) {
@@ -81,7 +103,7 @@ open class NotificationUtils {
                 val uniqueId = currentTime.toInt()
                 val timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date(currentTime))
                 
-                val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+                val builder = NotificationCompat.Builder(context, currentChannelId)
                     .setLargeIcon(
                         ContextCompat.getDrawable(context, R.drawable.spy_notify)?.toBitmap()
                     )
@@ -91,13 +113,13 @@ open class NotificationUtils {
                     .setAutoCancel(true)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-                    .setDefaults(NotificationCompat.DEFAULT_SOUND or NotificationCompat.DEFAULT_VIBRATE or NotificationCompat.DEFAULT_LIGHTS)
-                    .setSound(android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION))
+                    .setDefaults(NotificationCompat.DEFAULT_VIBRATE or NotificationCompat.DEFAULT_LIGHTS)
+                    .setSound(customSoundUri)
                     .setVibrate(longArrayOf(0, 300, 200, 300))
                     .setWhen(currentTime)
                     .setShowWhen(true)
                     .setOnlyAlertOnce(false)
-                    .setChannelId(CHANNEL_ID)
+                    .setChannelId(currentChannelId)
                     .setGroup("chat_messages")
                     .setGroupSummary(false)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -113,10 +135,9 @@ open class NotificationUtils {
                     
                     // 手動播放通知聲音（確保每次都有聲音）
                     try {
-                        val notification = android.media.RingtoneManager.getRingtone(context, 
-                            android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION))
+                        val notification = android.media.RingtoneManager.getRingtone(context, customSoundUri)
                         notification?.play()
-                        Log.d("NotificationUtils", "🔊 手動播放通知聲音")
+                        Log.d("NotificationUtils", "🔊 手動播放通知聲音: ${spUtil.getNotificationSoundName()}")
                     } catch (e: Exception) {
                         Log.e("NotificationUtils", "播放通知聲音失敗: ${e.message}")
                         logManager.addLog("播放通知聲音失敗: ${e.message}", "ERROR")
@@ -132,6 +153,38 @@ open class NotificationUtils {
         }
     }
 
+    fun createNotificationChannelWithSound(context: Context, soundUri: Uri) {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = context.getString(R.string.app_name)
+            val descriptionText = context.getString(R.string.channel_description)
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel(currentChannelId, name, importance).apply {
+                description = descriptionText
+                enableVibration(true)
+                vibrationPattern = longArrayOf(0, 300, 200, 300)
+                enableLights(true)
+                lightColor = android.graphics.Color.RED
+                setBypassDnd(true)
+                setShowBadge(true)
+            }
+            
+            val audioAttributes = AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
+                .build()
+            channel.setSound(soundUri, audioAttributes)
+            
+            Log.d("NotificationUtils", "🎵 創建通知頻道: $currentChannelId，音效: $soundUri")
+
+            // Register the channel with the system
+            notificationManager = context.getSystemService(NotificationManager::class.java)
+            notificationManager?.createNotificationChannel(channel)
+        }
+    }
+
     fun createNotificationChannel(context: Context) {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
@@ -139,7 +192,7 @@ open class NotificationUtils {
             val name = context.getString(R.string.app_name)
             val descriptionText = context.getString(R.string.channel_description)
             val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+            val channel = NotificationChannel(CHANNEL_ID_BASE, name, importance).apply {
                 description = descriptionText
                 // 確保每次都有聲音
                 setSound(null, null) // 先清除預設聲音
@@ -151,14 +204,22 @@ open class NotificationUtils {
                 setShowBadge(true)
             }
             
-            // 使用系統預設通知聲音，確保每次都響
-            val defaultSoundUri = android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION)
+            // 獲取自訂音效設定
+            val spUtil = SpUtil(context)
+            val customSoundUriString = spUtil.getNotificationSoundUri()
+            val soundUri = if (customSoundUriString != null) {
+                Uri.parse(customSoundUriString)
+            } else {
+                // 使用專案內的預設音效
+                Uri.parse("${ContentResolver.SCHEME_ANDROID_RESOURCE}://${context.packageName}/${R.raw.warning}")
+            }
+            
             val audioAttributes = AudioAttributes.Builder()
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                 .setUsage(AudioAttributes.USAGE_NOTIFICATION)
                 .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
                 .build()
-            channel.setSound(defaultSoundUri, audioAttributes)
+            channel.setSound(soundUri, audioAttributes)
 
             // Register the channel with the system
             notificationManager = context.getSystemService(NotificationManager::class.java)

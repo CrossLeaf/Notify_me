@@ -66,8 +66,24 @@ open class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        NotificationUtils().createNotificationChannel(this)
         spUtil = SpUtil(this)
+        
+        // 初始化預設音效設定 (如果尚未設定)
+        if (spUtil.getNotificationSoundUri() == null) {
+            val defaultSoundUri = android.net.Uri.parse("${android.content.ContentResolver.SCHEME_ANDROID_RESOURCE}://${packageName}/${R.raw.warning}")
+            spUtil.setNotificationSoundUri(defaultSoundUri.toString())
+            spUtil.setNotificationSoundName("預設通知音效 (Warning)")
+        }
+        
+        // 創建通知頻道（使用當前設定的音效）
+        val notificationUtils = NotificationUtils()
+        val currentSoundUriString = spUtil.getNotificationSoundUri()
+        val currentSoundUri = if (currentSoundUriString != null) {
+            android.net.Uri.parse(currentSoundUriString)
+        } else {
+            android.net.Uri.parse("${android.content.ContentResolver.SCHEME_ANDROID_RESOURCE}://${packageName}/${R.raw.warning}")
+        }
+        notificationUtils.createNotificationChannelWithSound(this, currentSoundUri)
         val stringSet: MutableSet<String> = spUtil.getCondition() ?: mutableSetOf()
         conditionArray = stringSet.toMutableList() as ArrayList<String>
 
@@ -146,6 +162,9 @@ open class MainActivity : AppCompatActivity() {
         }
         findViewById<AppCompatButton>(R.id.btnSetNotificationVolume).setOnClickListener {
             startActivity(Intent(this, NotificationVolumeActivity::class.java))
+        }
+        findViewById<AppCompatButton>(R.id.btnSetNotificationSound).setOnClickListener {
+            startActivity(Intent(this, NotificationSoundActivity::class.java))
         }
         
         // 初始化日誌相關UI

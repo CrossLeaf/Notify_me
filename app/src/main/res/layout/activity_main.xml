@@ -49,10 +49,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="設定通知聲音自動化處理"
-        app:layout_constraintBottom_toTopOf="@+id/logSection"
+        app:layout_constraintBottom_toTopOf="@+id/btnSetNotificationSound"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btnPickApp" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnSetNotificationSound"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="選擇通知音效"
+        app:layout_constraintBottom_toTopOf="@+id/logSection"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnSetNotificationVolume" />
 
     <!-- 日誌區域 -->
     <LinearLayout
@@ -64,7 +74,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnSetNotificationVolume">
+        app:layout_constraintTop_toBottomOf="@id/btnSetNotificationSound">
 
         <!-- 日誌標題和按鈕 -->
         <LinearLayout
