@@ -11,6 +11,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -18,7 +20,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -47,9 +51,23 @@ class AppListActivity : ComponentActivity() {
 @Composable
 fun AppListScreen(viewModel: AppListViewModel = viewModel()) {
     val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    var searchQuery by remember { mutableStateOf("") }
     
     LaunchedEffect(Unit) {
         viewModel.loadApps(context)
+    }
+    
+    // 根據搜尋查詢過濾應用程式
+    val filteredApps = remember(viewModel.appList, searchQuery) {
+        if (searchQuery.isEmpty()) {
+            viewModel.appList
+        } else {
+            viewModel.appList.filter { app ->
+                app.label.contains(searchQuery, ignoreCase = true) ||
+                app.packageName.contains(searchQuery, ignoreCase = true)
+            }
+        }
     }
     
     Column(
@@ -102,7 +120,12 @@ fun AppListScreen(viewModel: AppListViewModel = viewModel()) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "已安裝應用程式: ${viewModel.appList.size}",
+                    text = if (viewModel.isLoading) 
+                        "掃描中... (${viewModel.appList.size})" 
+                    else if (searchQuery.isEmpty()) 
+                        "已安裝應用程式: ${viewModel.appList.size}" 
+                    else 
+                        "搜尋結果: ${filteredApps.size}",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
@@ -114,6 +137,54 @@ fun AppListScreen(viewModel: AppListViewModel = viewModel()) {
             }
         }
         
+        // Search bar
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                placeholder = {
+                    Text(text = "搜尋應用程式...")
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "搜尋"
+                    )
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(
+                            onClick = { 
+                                searchQuery = ""
+                                keyboardController?.hide()
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "清除"
+                            )
+                        }
+                    }
+                },
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Search
+                ),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        keyboardController?.hide()
+                    }
+                ),
+                singleLine = true
+            )
+        }
+        
         // App list
         LazyColumn(
             modifier = Modifier
@@ -121,7 +192,7 @@ fun AppListScreen(viewModel: AppListViewModel = viewModel()) {
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(viewModel.appList) { app ->
+            items(filteredApps) { app ->
                 AppItem(
                     app = app,
                     onCheckedChange = { isChecked ->
@@ -130,8 +201,64 @@ fun AppListScreen(viewModel: AppListViewModel = viewModel()) {
                 )
             }
             
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
+            // Loading indicator at bottom when still loading
+            if (viewModel.isLoading) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // 掃描圖示動畫效果
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "📱",
+                                style = MaterialTheme.typography.headlineSmall
+                            )
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                strokeWidth = 2.dp
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Text(
+                            text = viewModel.loadingText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        // 進度條
+                        LinearProgressIndicator(
+                            progress = { viewModel.loadingProgress },
+                            modifier = Modifier
+                                .fillMaxWidth(0.6f)
+                                .height(2.dp),
+                            color = MaterialTheme.colorScheme.primary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        Text(
+                            text = "${(viewModel.loadingProgress * 100).toInt()}%",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            } else {
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
             }
         }
     }
