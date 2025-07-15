@@ -128,12 +128,13 @@ fun SoundSelectionScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "選擇通知音效",
-                    style = MaterialTheme.typography.headlineSmall
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
                     text = "點擊音效名稱可預覽並選擇",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))

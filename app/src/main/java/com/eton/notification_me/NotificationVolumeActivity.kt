@@ -10,118 +10,240 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
-import android.view.MenuItem
-import android.widget.SeekBar
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SwitchCompat
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.eton.notification_me.ui.theme.NotificationMeTheme
+import com.eton.notification_me.viewmodel.VolumeViewModel
 
-class NotificationVolumeActivity : AppCompatActivity() {
-    // 定義 AudioManager 來控制音量
-    private lateinit var audioManager: AudioManager
-
-    // 定義 SeekBar 來顯示和控制音量
-    private lateinit var seekBar: SeekBar
-
-    // 定義一個變量來存儲當前的音量
-    private var currentVolume: Int = 0
-
-    // 定義一個 ContentObserver 來監聽系統設置的變化
-    private val volumeObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
-        override fun onChange(selfChange: Boolean) {
-            super.onChange(selfChange)
-            // 當系統設置變化時，檢查音量是否有變化
-            checkVolumeChange()
-        }
-    }
-
+class NotificationVolumeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_notification_volume)
-        setTitle("Notification Volume")
-
-        // 獲取 AudioManager 服務
-        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        // 獲取當前的通知音量
-        currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION)
-
-        // 獲取 SeekBar 的實例並設定其最大值和當前進度
-        seekBar = findViewById(R.id.seekBar)
-        seekBar.max = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION)
-        seekBar.progress = currentVolume
-
-        // 為 SeekBar 設定一個監聽器，當進度變化時，更新通知音量
-        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, progress, 0)
-            }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
-
-        // 註冊 ContentObserver 來監聽系統設置的變化
-        contentResolver.registerContentObserver(
-            Settings.System.CONTENT_URI, true, volumeObserver
-        )
-        val isRunning = isServiceRunning(this, WifiVolumeService::class.java)
-        findViewById<SwitchCompat>(R.id.switchAutoAdjustVolume).apply {
-            isChecked = isRunning
-
-            setOnCheckedChangeListener { compoundButton, isChecked ->
-                if (!compoundButton.isPressed) return@setOnCheckedChangeListener
-
-                if (isChecked) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        startForegroundService(Intent(context, WifiVolumeService::class.java))
-                    } else {
-                        startService(Intent(context, WifiVolumeService::class.java))
-                    }
-                } else {
-                    stopService(Intent(context, WifiVolumeService::class.java))
+        
+        setContent {
+            NotificationMeTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    VolumeScreen()
                 }
             }
         }
     }
+}
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            // 當點擊返回鍵時，結束當前的 Activity
-            android.R.id.home -> {
-                finish()
-                true
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun VolumeScreen(viewModel: VolumeViewModel = viewModel()) {
+    val context = LocalContext.current
+    val scrollState = rememberScrollState()
+    
+    LaunchedEffect(Unit) {
+        viewModel.initialize(context)
+    }
+    
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.cleanup()
+        }
+    }
+    
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+    ) {
+        // Header
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.VolumeUp,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "通知音量控制",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    text = "調整通知音量和自動化設定",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             }
-
-            else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        // 在 Activity 被銷毀時，取消註冊 ContentObserver
-        contentResolver.unregisterContentObserver(volumeObserver)
-    }
-
-    /**
-     * Check if the volume has changed and update the seek bar if it has.
-     */
-    private fun checkVolumeChange() {
-        // 獲取新的通知音量
-        val newVolume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION)
-        // 如果新的音量與當前的音量不同，則更新 SeekBar 的進度
-        if (newVolume != currentVolume) {
-            currentVolume = newVolume
-            seekBar.progress = currentVolume
-        }
-    }
-
-    fun isServiceRunning(context: Context, serviceClass: Class<*>): Boolean {
-        val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        for (service in manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.name == service.service.className) {
-                return true
+        
+        // Volume control
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = "音量控制",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.VolumeDown,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    
+                    Spacer(modifier = Modifier.width(8.dp))
+                    
+                    Slider(
+                        value = viewModel.currentVolume.toFloat(),
+                        onValueChange = { newValue ->
+                            viewModel.setVolume(newValue.toInt())
+                        },
+                        valueRange = 0f..viewModel.maxVolume.toFloat(),
+                        steps = viewModel.maxVolume - 1,
+                        modifier = Modifier.weight(1f),
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary,
+                            inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    )
+                    
+                    Spacer(modifier = Modifier.width(8.dp))
+                    
+                    Icon(
+                        imageVector = Icons.Default.VolumeUp,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Text(
+                    text = "當前音量: ${viewModel.currentVolume} / ${viewModel.maxVolume}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
-        return false
+        
+        // Auto adjustment
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = "自動化設定",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "自動音量調整",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = "根據網路狀態自動調整通知音量",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    
+                    Switch(
+                        checked = viewModel.isAutoAdjustEnabled,
+                        onCheckedChange = { isEnabled ->
+                            viewModel.toggleAutoAdjust(context, isEnabled)
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.primary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                            uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    )
+                }
+                
+                if (viewModel.isAutoAdjustEnabled) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "自動音量調整服務已啟用",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
