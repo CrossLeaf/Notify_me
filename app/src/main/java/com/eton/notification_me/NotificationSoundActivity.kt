@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.eton.notification_me.ui.theme.NotificationMeTheme
@@ -53,6 +54,8 @@ class NotificationSoundActivity : ComponentActivity() {
         currentPlayingRingtone?.stop()
         try {
             currentPlayingRingtone = RingtoneManager.getRingtone(this, soundItem.uri)
+            // 設定為多媒體音量播放，避免勿擾模式影響
+            currentPlayingRingtone?.streamType = android.media.AudioManager.STREAM_MUSIC
             currentPlayingRingtone?.play()
         } catch (e: Exception) {
             Log.e("NotificationSoundActivity", "Error playing sound: ${e.message}")
@@ -167,21 +170,63 @@ fun SoundSelectionScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 
-                if (viewModel.isLoading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        contentAlignment = Alignment.Center
+                // Sound count info
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (viewModel.isLoading) 
+                            "已找到 ${viewModel.soundList.size} 個音效 (載入中...)" 
+                        else 
+                            "共找到 ${viewModel.soundList.size} 個音效",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        CircularProgressIndicator()
+                        TextButton(
+                            onClick = { viewModel.reloadSounds(context) },
+                            enabled = !viewModel.isLoading
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "重新載入",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "重新載入",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                     }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.height(400.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(viewModel.soundList) { soundItem ->
+                }
+                
+                LazyColumn(
+                    modifier = Modifier.height(400.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    // Group sounds by category
+                    val groupedSounds = viewModel.soundList.groupBy { it.category }
+                    
+                    groupedSounds.forEach { (category, sounds) ->
+                        item {
+                            // Category header
+                            Text(
+                                text = category,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                        }
+                        
+                        items(sounds) { soundItem ->
                             SoundItemCard(
                                 soundItem = soundItem,
                                 onSoundSelected = { sound ->
@@ -191,6 +236,62 @@ fun SoundSelectionScreen(
                                     onSoundSelected(sound)
                                 }
                             )
+                        }
+                    }
+                    
+                    // Loading indicator at bottom when still loading
+                    if (viewModel.isLoading) {
+                        item {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                // 跑步小人動畫效果
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        text = "🏃",
+                                        style = MaterialTheme.typography.headlineSmall
+                                    )
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        color = MaterialTheme.colorScheme.primary,
+                                        strokeWidth = 2.dp
+                                    )
+                                }
+                                
+                                Spacer(modifier = Modifier.height(8.dp))
+                                
+                                Text(
+                                    text = viewModel.loadingText,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                
+                                Spacer(modifier = Modifier.height(4.dp))
+                                
+                                // 進度條
+                                LinearProgressIndicator(
+                                    progress = { viewModel.loadingProgress },
+                                    modifier = Modifier
+                                        .fillMaxWidth(0.6f)
+                                        .height(2.dp),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                                
+                                Spacer(modifier = Modifier.height(4.dp))
+                                
+                                Text(
+                                    text = "${(viewModel.loadingProgress * 100).toInt()}%",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
@@ -231,15 +332,35 @@ fun SoundItemCard(
                     color = if (soundItem.isSelected) 
                         MaterialTheme.colorScheme.primary 
                     else 
-                        MaterialTheme.colorScheme.onSurface
+                        MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 
-                if (soundItem.isSelected) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        text = "已選中",
+                        text = soundItem.category,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    
+                    if (soundItem.isSelected) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = "已選中",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "已選中",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
             
@@ -267,5 +388,6 @@ fun SoundItemCard(
 data class SoundItem(
     val uri: Uri?,
     val name: String,
-    val isSelected: Boolean = false
+    val isSelected: Boolean = false,
+    val category: String = "其他"
 )
