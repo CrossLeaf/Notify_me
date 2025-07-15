@@ -1,81 +1,77 @@
 package com.eton.notification_me
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
-import android.view.*
-import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
-import android.widget.ImageView
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.AppCompatButton
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
-import com.eton.notification_me.util.LogManager
-import android.widget.TextView
-import android.widget.Button
-import android.widget.ScrollView
 import android.os.Handler
 import android.os.Looper
 import android.text.Html
 import android.text.Spanned
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.eton.notification_me.ui.theme.NotificationMeTheme
+import com.eton.notification_me.util.LogManager
+import com.eton.notification_me.viewmodel.MainViewModel
 
-
-open class MainActivity : AppCompatActivity() {
-
-    var conditionArray = arrayListOf<String>()
-    private lateinit var spUtil: SpUtil
-    lateinit var adapter: ConditionAdapter
+class MainActivity : ComponentActivity() {
     private var alertDialog: AlertDialog? = null
     private lateinit var logManager: LogManager
-    private lateinit var tvLogs: TextView
-    private lateinit var tvLogCount: TextView
-    private lateinit var scrollView: ScrollView
     private val logUpdateHandler = Handler(Looper.getMainLooper())
     private val logUpdateRunnable = object : Runnable {
         override fun run() {
-            updateLogDisplay()
-            logUpdateHandler.postDelayed(this, 2000) // 每2秒更新一次
+            // Update logs will be handled in Compose
+            logUpdateHandler.postDelayed(this, 2000)
         }
     }
+    
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
-        if (isGranted) {
-            // Permission is granted. Continue with the action or workflow in your app.
-            Snackbar.make(findViewById(R.id.parentView), "Notification permission granted", Snackbar.LENGTH_SHORT).show()
-        } else {
-            // Explain to the user that the feature is unavailable because the
-            // features requires a permission that the user has denied.
-            Snackbar.make(findViewById(R.id.parentView), "Notification permission denied", Snackbar.LENGTH_SHORT).show()
-        }
+        // Handle permission result
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        spUtil = SpUtil(this)
         
-        // 初始化預設音效設定 (如果尚未設定)
+        // Initialize dependencies
+        val spUtil = SpUtil(this)
+        logManager = LogManager.getInstance()
+        logManager.addLog("MainActivity 啟動", "INFO")
+        logManager.loadLogsFromFile(this)
+        
+        // Initialize default sound settings
         if (spUtil.getNotificationSoundUri() == null) {
             val defaultSoundUri = android.net.Uri.parse("${android.content.ContentResolver.SCHEME_ANDROID_RESOURCE}://${packageName}/${R.raw.warning}")
             spUtil.setNotificationSoundUri(defaultSoundUri.toString())
             spUtil.setNotificationSoundName("預設通知音效 (Warning)")
         }
         
-        // 創建通知頻道（使用當前設定的音效）
+        // Create notification channel
         val notificationUtils = NotificationUtils()
         val currentSoundUriString = spUtil.getNotificationSoundUri()
         val currentSoundUri = if (currentSoundUriString != null) {
@@ -84,23 +80,24 @@ open class MainActivity : AppCompatActivity() {
             android.net.Uri.parse("${android.content.ContentResolver.SCHEME_ANDROID_RESOURCE}://${packageName}/${R.raw.warning}")
         }
         notificationUtils.createNotificationChannelWithSound(this, currentSoundUri)
-        val stringSet: MutableSet<String> = spUtil.getCondition() ?: mutableSetOf()
-        conditionArray = stringSet.toMutableList() as ArrayList<String>
-
-        // 初始化 LogManager
-        logManager = LogManager.getInstance()
-        logManager.addLog("MainActivity 啟動", "INFO")
-        logManager.loadLogsFromFile(this)
-
-        initView()
         
-        // 開始自動更新日誌顯示
+        setContent {
+            NotificationMeTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    MainScreen()
+                }
+            }
+        }
+        
         logUpdateHandler.post(logUpdateRunnable)
     }
 
     override fun onResume() {
         super.onResume()
-        if (!isPurview(this)) { // 檢查權限是否開啟，未開啟則開啟對話框
+        if (!isPurview(this)) {
             alertDialog?.dismiss()
             if (alertDialog != null) {
                 alertDialog?.show()
@@ -110,118 +107,11 @@ open class MainActivity : AppCompatActivity() {
                 .setTitle(R.string.app_name)
                 .setMessage("請啟用通知欄擷取權限")
                 .setIcon(R.mipmap.ic_launcher_round)
-                .setOnCancelListener { // 對話框取消事件
-                    finish()
-                }
-                .setPositiveButton(
-                    "前往"
-                ) { _, _ ->
-                    // 對話框按鈕事件
-                    // 跳轉自開啟權限畫面，權限開啟後通知欄擷取服務將自動啟動。
+                .setOnCancelListener { finish() }
+                .setPositiveButton("前往") { _, _ ->
                     startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
                 }.create()
             alertDialog?.show()
-        }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu, menu)
-        return true
-    }
-
-    @RequiresApi(Build.VERSION_CODES.N)
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_save -> {
-                val inputMethodManager =
-                    getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-                inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
-                saveCondition()
-                adapter.notifyDataSetChanged()
-            }
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    private fun initView() {
-        val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewCondition)
-        recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        adapter = ConditionAdapter(conditionArray)
-        recyclerView.adapter = adapter
-
-        findViewById<AppCompatButton>(R.id.btnAdd).setOnClickListener {
-            conditionArray.add("")
-            adapter.notifyItemRangeInserted(
-                conditionArray.size - 1,
-                conditionArray.size
-            )
-        }
-
-        findViewById<AppCompatButton>(R.id.btnPickApp).setOnClickListener {
-            startActivity(Intent(this, AppListActivity::class.java))
-        }
-        findViewById<AppCompatButton>(R.id.btnSetNotificationVolume).setOnClickListener {
-            startActivity(Intent(this, NotificationVolumeActivity::class.java))
-        }
-        findViewById<AppCompatButton>(R.id.btnSetNotificationSound).setOnClickListener {
-            startActivity(Intent(this, NotificationSoundActivity::class.java))
-        }
-        
-        // 初始化日誌相關UI
-        tvLogs = findViewById(R.id.tvLogs)
-        tvLogCount = findViewById(R.id.tvLogCount)
-        scrollView = findViewById(R.id.scrollViewLogs)
-        
-        // 清除日誌按鈕
-        findViewById<Button>(R.id.btnClearLogs).setOnClickListener {
-            logManager.clearLogs()
-            logManager.addLog("手動清除日誌", "INFO")
-            updateLogDisplay()
-        }
-        
-        // 保存日誌按鈕
-        findViewById<Button>(R.id.btnSaveLogs).setOnClickListener {
-            val success = logManager.saveLogsToFile(this)
-            if (success) {
-                Snackbar.make(findViewById(R.id.parentView), "日誌已保存", Snackbar.LENGTH_SHORT).show()
-            } else {
-                Snackbar.make(findViewById(R.id.parentView), "日誌保存失敗", Snackbar.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    /**
-     * 更新日誌顯示
-     */
-    private fun updateLogDisplay() {
-        val logs = logManager.getAllLogs()
-        val logText = logs.joinToString("<br>")
-        
-        // 保存當前滾動位置
-        val currentScrollY = scrollView.scrollY
-        
-        if (logText.isNotEmpty()) {
-            val spanned: Spanned = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                Html.fromHtml(logText, Html.FROM_HTML_MODE_COMPACT)
-            } else {
-                @Suppress("DEPRECATION")
-                Html.fromHtml(logText)
-            }
-            tvLogs.text = spanned
-        } else {
-            tvLogs.text = "日誌將在此處顯示..."
-        }
-        
-        tvLogCount.text = "${logs.size} 條"
-        
-        // 恢復滾動位置，防止自動滾動
-        scrollView.post {
-            scrollView.scrollTo(0, currentScrollY)
-        }
-        
-        // 自動保存（每10次更新保存一次）
-        if (logs.size % 10 == 0 && logs.isNotEmpty()) {
-            logManager.saveLogsToFile(this)
         }
     }
 
@@ -237,24 +127,7 @@ open class MainActivity : AppCompatActivity() {
         logManager.saveLogsToFile(this)
     }
 
-    /**
-     * 儲存條件
-     */
-    @RequiresApi(Build.VERSION_CODES.N)
-    private fun saveCondition() {
-        val temp = conditionArray.toMutableList()
-        temp.removeIf {
-            it.isEmpty()
-        }
-        conditionArray.clear()
-        conditionArray.addAll(temp)
-        // 保存至 Sp
-        spUtil.editCondition(conditionArray.toSet())
-        // 顯示保存成功 Snackbar/
-        Snackbar.make(findViewById(R.id.parentView), "保存成功", Snackbar.LENGTH_SHORT).show()
-    }
-
-    private fun isPurview(context: Context): Boolean { // 檢查權限是否開啟 true = 開啟 ，false = 未開啟
+    private fun isPurview(context: Context): Boolean {
         val packageNames = NotificationManagerCompat.getEnabledListenerPackages(context)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             when {
@@ -262,75 +135,215 @@ open class MainActivity : AppCompatActivity() {
                     this,
                     Manifest.permission.POST_NOTIFICATIONS
                 ) == PackageManager.PERMISSION_GRANTED -> {
-                    // You can use the API that requires the permission.
+                    // Permission granted
                 }
                 shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
-                    // In an educational UI, explain to the user why your app requires this
-                    // permission for a specific feature to behave as expected.
-                    Snackbar.make(findViewById(R.id.parentView), "Notification permission is required to send notifications", Snackbar.LENGTH_INDEFINITE)
-                        .setAction("OK") {
-                            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        }.show()
+                    // Show rationale and request permission
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
                 else -> {
-                    // Directly ask for the permission
+                    // Request permission
                     requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
             }
         }
         return packageNames.contains(context.packageName)
     }
+}
 
-    class ConditionAdapter(private val dataArray: ArrayList<String>) :
-        RecyclerView.Adapter<ConditionAdapter.ViewHolder>() {
-
-        class ViewHolder(view: View) :
-            RecyclerView.ViewHolder(view) {
-            val editText: EditText = view.findViewById(R.id.etCondition)
-            val imgRemove: ImageView = view.findViewById(R.id.imgRemove)
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context)
-                .inflate(R.layout.item_condition, parent, false)
-
-            return ViewHolder(view)
-        }
-
-        override fun onBindViewHolder(
-            holder: ViewHolder,
-            @SuppressLint("RecyclerView") position: Int
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainScreen(viewModel: MainViewModel = viewModel()) {
+    val context = LocalContext.current
+    val scrollState = rememberScrollState()
+    
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(scrollState)
+    ) {
+        // Title
+        Text(
+            text = "通知監控設定",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        
+        // Conditions Section
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
         ) {
-            val textWatcher = object : TextWatcher {
-                override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-
-                }
-
-                override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                }
-
-                override fun afterTextChanged(editable: Editable?) {
-                    dataArray[position] = editable.toString()
-                }
-            }
-            holder.editText.apply {
-                setText(dataArray[position])
-                this.setOnFocusChangeListener { _, hasFocus ->
-                    if (hasFocus) {
-                        this.addTextChangedListener(textWatcher)
-                    } else {
-                        this.removeTextChangedListener(textWatcher)
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "監控條件",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    IconButton(
+                        onClick = { viewModel.addCondition() }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "新增條件"
+                        )
                     }
                 }
-            }
-            holder.imgRemove.setOnClickListener {
-                dataArray.removeAt(position)
-                notifyDataSetChanged()
+                
+                LazyColumn(
+                    modifier = Modifier.height(200.dp)
+                ) {
+                    itemsIndexed(viewModel.conditions) { index, condition ->
+                        ConditionItem(
+                            condition = condition,
+                            onValueChange = { viewModel.updateCondition(index, it) },
+                            onRemove = { viewModel.removeCondition(index) }
+                        )
+                    }
+                }
+                
+                Button(
+                    onClick = { viewModel.saveConditions() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Save,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("保存條件")
+                }
             }
         }
+        
+        // Action Buttons
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = "應用程式設定",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                
+                Button(
+                    onClick = {
+                        context.startActivity(Intent(context, AppListActivity::class.java))
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Apps,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("選擇要監聽的應用程式")
+                }
+                
+                Button(
+                    onClick = {
+                        context.startActivity(Intent(context, NotificationVolumeActivity::class.java))
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.VolumeUp,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("設定通知聲音自動化處理")
+                }
+                
+                Button(
+                    onClick = {
+                        context.startActivity(Intent(context, NotificationSoundActivity::class.java))
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MusicNote,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("選擇通知音效")
+                }
+                
+                Button(
+                    onClick = {
+                        context.startActivity(Intent(context, LogActivity::class.java))
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Terminal,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("查看運行日誌")
+                }
+            }
+        }
+    }
+}
 
-        override fun getItemCount(): Int {
-            return dataArray.size
+@Composable
+fun ConditionItem(
+    condition: String,
+    onValueChange: (String) -> Unit,
+    onRemove: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = condition,
+                onValueChange = onValueChange,
+                modifier = Modifier.weight(1f),
+                placeholder = { Text("輸入監控條件") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+            )
+            IconButton(
+                onClick = onRemove,
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "刪除條件",
+                    tint = MaterialTheme.colorScheme.error
+                )
+            }
         }
     }
 }

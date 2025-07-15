@@ -35,6 +35,10 @@
             android:name=".AppListActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".LogActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
         <meta-data
             android:name="com.eton.notification_me.smallicon"

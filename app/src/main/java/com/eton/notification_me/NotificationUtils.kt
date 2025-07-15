@@ -93,12 +93,25 @@ open class NotificationUtils {
                     return
                 }
                 
-                // 記錄訊息（移除重複檢查，像聊天軟體一樣處理每次訊息）
+                // 檢查是否為重複通知 (防止短時間內重複觸發)
+                val currentTime = System.currentTimeMillis()
+                val lastNotificationTime = spUtil.getLastNotificationTime()
+                val timeDiff = currentTime - lastNotificationTime
+                
+                // 如果距離上次通知時間少於2秒，且訊息內容相同，則跳過
+                if (timeDiff < 2000 && messageBody == spUtil.getMessageBody()) {
+                    Log.d("NotificationUtils", "⚠️ 重複通知，跳過處理 (時間差: ${timeDiff}ms)")
+                    logManager.addNotificationLog("重複通知，跳過處理: $messageBody", "INFO")
+                    return
+                }
+                
+                // 記錄訊息
                 Log.d("NotificationUtils", "處理訊息: $messageBody")
                 logManager.addNotificationLog("關鍵字匹配，準備發送通知: $messageBody", "INFO")
                 
-                // 記錄當前時間
-                val currentTime = System.currentTimeMillis()
+                // 更新最後處理的訊息內容
+                spUtil.editMessageBody(messageBody)
+                
                 // 確保每次通知都有唯一的識別
                 val uniqueId = currentTime.toInt()
                 val timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date(currentTime))
@@ -131,17 +144,17 @@ open class NotificationUtils {
                 
                 // 發送通知
                 with(NotificationManagerCompat.from(context)) {
-                    notify(uniqueId, builder.build())
-                    
-                    // 手動播放通知聲音（確保每次都有聲音）
-                    try {
-                        val notification = android.media.RingtoneManager.getRingtone(context, customSoundUri)
-                        notification?.play()
-                        Log.d("NotificationUtils", "🔊 手動播放通知聲音: ${spUtil.getNotificationSoundName()}")
-                    } catch (e: Exception) {
-                        Log.e("NotificationUtils", "播放通知聲音失敗: ${e.message}")
-                        logManager.addLog("播放通知聲音失敗: ${e.message}", "ERROR")
+                    if (areNotificationsEnabled()) {
+                        @Suppress("MissingPermission")
+                        notify(uniqueId, builder.build())
+                    } else {
+                        Log.w("NotificationUtils", "通知權限未授予，無法發送通知")
+                        logManager.addLog("通知權限未授予，無法發送通知", "WARNING")
+                        return
                     }
+                    
+                    // 通知音效已由系統通知處理，不需要手動播放
+                    Log.d("NotificationUtils", "🔊 通知音效由系統處理: ${spUtil.getNotificationSoundName()}")
                     
                     // 更新最後通知時間
                     spUtil.setLastNotificationTime(currentTime)
