@@ -10,6 +10,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -17,20 +18,42 @@ import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
     primary = NotificationPrimaryDark,
+    onPrimary = Color.Black,
+    primaryContainer = NotificationPrimaryVariantDark,
+    onPrimaryContainer = Color.Black,
     secondary = NotificationSecondaryDark,
+    onSecondary = Color.Black,
+    secondaryContainer = NotificationSecondaryVariantDark,
+    onSecondaryContainer = Color.Black,
     tertiary = Pink80,
     background = NotificationBackgroundDark,
+    onBackground = Color.White,
     surface = NotificationSurfaceDark,
-    error = NotificationErrorDark
+    onSurface = Color.White,
+    surfaceVariant = NotificationSurfaceDark,
+    onSurfaceVariant = Color.White,
+    error = NotificationErrorDark,
+    onError = Color.Black
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = NotificationPrimary,
+    onPrimary = Color.White,
+    primaryContainer = NotificationPrimaryVariant,
+    onPrimaryContainer = Color.White,
     secondary = NotificationSecondary,
+    onSecondary = Color.White,
+    secondaryContainer = NotificationSecondaryVariant,
+    onSecondaryContainer = Color.White,
     tertiary = Pink40,
     background = NotificationBackground,
+    onBackground = Color.Black,
     surface = NotificationSurface,
-    error = NotificationError
+    onSurface = Color.Black,
+    surfaceVariant = NotificationSurface,
+    onSurfaceVariant = Color.Black,
+    error = NotificationError,
+    onError = Color.White
 )
 
 @Composable

@@ -33,9 +33,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val savedConditions = spUtil.getCondition()?.toList() ?: emptyList()
         _conditions.clear()
         _conditions.addAll(savedConditions)
-        if (_conditions.isEmpty()) {
-            _conditions.add("") // Add empty condition for first use
-        }
+        // Don't add empty condition automatically
     }
     
     fun addCondition() {

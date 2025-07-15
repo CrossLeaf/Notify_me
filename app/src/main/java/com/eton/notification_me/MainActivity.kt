@@ -14,6 +14,7 @@ import android.text.Spanned
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -188,20 +189,43 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                         text = "監控條件",
                         style = MaterialTheme.typography.titleMedium
                     )
-                    IconButton(
-                        onClick = { viewModel.addCondition() }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "新增條件"
-                        )
+                    Row {
+                        IconButton(
+                            onClick = { viewModel.addCondition() }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "新增條件",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        IconButton(
+                            onClick = { viewModel.saveConditions() }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Save,
+                                contentDescription = "保存條件",
+                                tint = MaterialTheme.colorScheme.secondary
+                            )
+                        }
                     }
                 }
                 
-                LazyColumn(
-                    modifier = Modifier.height(200.dp)
+                // Display success message
+                viewModel.successMessage?.let { message ->
+                    Text(
+                        text = message,
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
+                
+                // Dynamic height based on content
+                Column(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    itemsIndexed(viewModel.conditions) { index, condition ->
+                    viewModel.conditions.forEachIndexed { index, condition ->
                         ConditionItem(
                             condition = condition,
                             onValueChange = { viewModel.updateCondition(index, it) },
@@ -210,19 +234,33 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                     }
                 }
                 
-                Button(
-                    onClick = { viewModel.saveConditions() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Save,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("保存條件")
+                // Quick add button with hint
+                if (viewModel.conditions.isEmpty()) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "點擊右上角的 + 按鈕新增監控條件",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -242,70 +280,101 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 
-                Button(
+                FilledTonalButton(
                     onClick = {
                         context.startActivity(Intent(context, AppListActivity::class.java))
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 8.dp)
+                        .padding(bottom = 8.dp),
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
                 ) {
                     Icon(
                         imageVector = Icons.Default.Apps,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(20.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("選擇要監聽的應用程式")
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "選擇要監聽的應用程式",
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
                 
-                Button(
+                FilledTonalButton(
                     onClick = {
                         context.startActivity(Intent(context, NotificationVolumeActivity::class.java))
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 8.dp)
+                        .padding(bottom = 8.dp),
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
                 ) {
                     Icon(
                         imageVector = Icons.Default.VolumeUp,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(20.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("設定通知聲音自動化處理")
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "設定通知聲音自動化處理",
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
                 
-                Button(
+                FilledTonalButton(
                     onClick = {
                         context.startActivity(Intent(context, NotificationSoundActivity::class.java))
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 8.dp)
+                        .padding(bottom = 8.dp),
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
                 ) {
                     Icon(
                         imageVector = Icons.Default.MusicNote,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(20.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("選擇通知音效")
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "選擇通知音效",
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
                 
-                Button(
+                OutlinedButton(
                     onClick = {
                         context.startActivity(Intent(context, LogActivity::class.java))
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    border = BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.outline
+                    ),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    )
                 ) {
                     Icon(
                         imageVector = Icons.Default.Terminal,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(20.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("查看運行日誌")
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "查看運行日誌",
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
             }
         }
@@ -321,19 +390,40 @@ fun ConditionItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .padding(vertical = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Row(
-            modifier = Modifier.padding(8.dp),
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedTextField(
                 value = condition,
                 onValueChange = onValueChange,
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("輸入監控條件") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                placeholder = { 
+                    Text(
+                        text = "輸入監控條件 (例如：急件、重要通知)",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+                shape = MaterialTheme.shapes.medium,
+                singleLine = true
             )
+            
             IconButton(
                 onClick = onRemove,
                 modifier = Modifier.padding(start = 8.dp)
@@ -341,7 +431,8 @@ fun ConditionItem(
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "刪除條件",
-                    tint = MaterialTheme.colorScheme.error
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
