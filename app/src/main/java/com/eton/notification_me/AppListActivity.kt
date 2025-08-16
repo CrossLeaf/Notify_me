@@ -1,135 +1,322 @@
 package com.eton.notification_me
 
-import android.annotation.SuppressLint
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-import android.widget.CheckBox
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.eton.notification_me.ui.theme.NotificationMeTheme
+import com.eton.notification_me.viewmodel.AppListViewModel
+import com.google.accompanist.drawablepainter.rememberDrawablePainter
 
-class AppListActivity : AppCompatActivity() {
-    lateinit var adapter: PackageAdapter
-    var dataArray = arrayListOf<AppBean>()
-    lateinit var spUtil: SpUtil
-    val packageNameSet = mutableSetOf<String>()
-
+class AppListActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_app_list)
-        initData()
-        initView()
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == android.R.id.home) {
-            finish()
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    private fun initView() {
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewAppList)
-        recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        recyclerView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
-        adapter = PackageAdapter(dataArray)
-        recyclerView.adapter = adapter
-    }
-
-    private fun initData() {
-        spUtil = SpUtil(this)
-        packageNameSet.addAll(spUtil.getPackageName())
-
-        packageManager.getInstalledPackages(PackageManager.GET_META_DATA)
-            .filter {
-                (it.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) <= 0
-                        // 判斷是否是自己的 app, 是的話就不顯示
-                        && !(it.packageName?.contentEquals(this.applicationContext.packageName)
-                    ?: false)
+        
+        setContent {
+            NotificationMeTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AppListScreen()
+                }
             }
-            .sortedBy { it.applicationInfo.loadLabel(packageManager).toString() } // 按照應用程式名稱排序
-            .forEach {
-                Log.d("TAG", "initData: ${it.applicationInfo.loadLabel(packageManager)}")
-                dataArray.add(
-                    AppBean(
-                        it.applicationInfo.loadLabel(packageManager).toString(),
-                        it.packageName,
-                        it.applicationInfo.loadIcon(packageManager),
-                        packageNameSet.contains(it.packageName)
-                    )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppListScreen(viewModel: AppListViewModel = viewModel()) {
+    val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    var searchQuery by remember { mutableStateOf("") }
+    
+    LaunchedEffect(Unit) {
+        viewModel.loadApps(context)
+    }
+    
+    // 根據搜尋查詢過濾應用程式
+    val filteredApps = remember(viewModel.appList, searchQuery) {
+        if (searchQuery.isEmpty()) {
+            viewModel.appList
+        } else {
+            viewModel.appList.filter { app ->
+                app.label.contains(searchQuery, ignoreCase = true) ||
+                app.packageName.contains(searchQuery, ignoreCase = true)
+            }
+        }
+    }
+    
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // Header
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Apps,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "應用程式選擇",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    text = "選擇要監控通知的應用程式",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
-    }
-
-    inner class PackageAdapter(private val dataArray: ArrayList<AppBean>) :
-        RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
-        private val VIEW_TYPE_ITEM = 0
-        private val VIEW_TYPE_FOOTER = 1
-
-        inner class ItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            val imgIcon: ImageView = view.findViewById(R.id.imgIcon)
-            val checkBox: CheckBox = view.findViewById(R.id.checkBox)
-            val tvName: TextView = view.findViewById(R.id.tvName)
         }
-
-        inner class FooterViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            val footerText: TextView = view.findViewById(R.id.footerText)
-        }
-
-        override fun getItemViewType(position: Int): Int {
-            return if (position == dataArray.size) VIEW_TYPE_FOOTER else VIEW_TYPE_ITEM
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-            return if (viewType == VIEW_TYPE_ITEM) {
-                val view = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_app_list, parent, false)
-                ItemViewHolder(view)
-            } else {
-                val view = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_footer, parent, false)
-                FooterViewHolder(view)
+        
+        // App counter
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (viewModel.isLoading) 
+                        "掃描中... (${viewModel.appList.size})" 
+                    else if (searchQuery.isEmpty()) 
+                        "已安裝應用程式: ${viewModel.appList.size}" 
+                    else 
+                        "搜尋結果: ${filteredApps.size}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = "已選擇: ${viewModel.appList.count { it.check }}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
-
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-            if (holder is ItemViewHolder) {
-                holder.apply {
-                    dataArray[position].also {
-                        checkBox.isChecked = it.check
-                        imgIcon.setImageDrawable(it.icon)
-                        tvName.text = it.label
-                        checkBox.setOnClickListener { view ->
-                            val isChecked = (view as CheckBox).isChecked
-                            it.check = isChecked
-                            if (isChecked) {
-                                packageNameSet.add(it.packageName)
-                            } else {
-                                packageNameSet.remove(it.packageName)
+        
+        // Search bar
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                placeholder = {
+                    Text(text = "搜尋應用程式...")
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "搜尋"
+                    )
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(
+                            onClick = { 
+                                searchQuery = ""
+                                keyboardController?.hide()
                             }
-                            spUtil.editPackageName(packageNameSet)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "清除"
+                            )
                         }
                     }
+                },
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Search
+                ),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        keyboardController?.hide()
+                    }
+                ),
+                singleLine = true
+            )
+        }
+        
+        // App list
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(filteredApps) { app ->
+                AppItem(
+                    app = app,
+                    onCheckedChange = { isChecked ->
+                        viewModel.toggleAppSelection(app, isChecked)
+                    }
+                )
+            }
+            
+            // Loading indicator at bottom when still loading
+            if (viewModel.isLoading) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // 掃描圖示動畫效果
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "📱",
+                                style = MaterialTheme.typography.headlineSmall
+                            )
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                strokeWidth = 2.dp
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Text(
+                            text = viewModel.loadingText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        // 進度條
+                        LinearProgressIndicator(
+                            progress = { viewModel.loadingProgress },
+                            modifier = Modifier
+                                .fillMaxWidth(0.6f)
+                                .height(2.dp),
+                            color = MaterialTheme.colorScheme.primary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        Text(
+                            text = "${(viewModel.loadingProgress * 100).toInt()}%",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
-            } else if (holder is FooterViewHolder) {
-                holder.footerText.text = "No more data"
+            } else {
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
             }
         }
+    }
+}
 
-        override fun getItemCount(): Int {
-            return dataArray.size + 1
+@Composable
+fun AppItem(
+    app: AppBean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = rememberDrawablePainter(app.icon),
+                contentDescription = null,
+                modifier = Modifier.size(48.dp)
+            )
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = app.label,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = app.packageName,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            Switch(
+                checked = app.check,
+                onCheckedChange = onCheckedChange,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            )
         }
     }
 }

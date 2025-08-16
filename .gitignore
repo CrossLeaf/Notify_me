@@ -85,3 +85,4 @@ lint/tmp/
 
 .DS_Store
 .vscode/
+keystore.properties

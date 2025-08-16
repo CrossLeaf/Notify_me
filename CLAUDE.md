@@ -51,6 +51,9 @@ This is an Android notification monitoring application ("Notification_me") that 
 
 # Generate lint report
 ./gradlew lintDebug
+
+# Build without lint (when fixing lint issues)
+./gradlew assembleDebug -x lintDebug
 ```
 
 ## Architecture and Structure
@@ -58,10 +61,11 @@ This is an Android notification monitoring application ("Notification_me") that 
 ### Core Components
 
 1. **MainActivity** (`app/src/main/java/com/eton/notification_me/MainActivity.kt`)
-   - Main entry point and configuration UI
+   - Main entry point and configuration UI built with Jetpack Compose
    - Handles notification permission requests (Android 13+)
    - Manages condition list for notification filtering
-   - Uses RecyclerView with custom adapter for dynamic condition management
+   - Uses Material 3 design system with LazyColumn for dynamic condition management
+   - Implemented as ComponentActivity with MainViewModel for state management
 
 2. **NotificationMonitorService** (`app/src/main/java/com/eton/notification_me/NotificationMonitorService.kt`)
    - Extends `NotificationListenerService`
@@ -101,10 +105,11 @@ The app requires several critical permissions:
 ### Development Notes
 
 - **Target SDK**: 34 (Android 14)
-- **Min SDK**: 23 (Android 6.0)
+- **Min SDK**: 24 (Android 7.0)
 - **Language**: Kotlin with Java 8 compatibility
-- **Build Tools**: Android Gradle Plugin 7.1.2, Kotlin 1.6.21
-- **UI**: Material Design components with RecyclerView patterns
+- **Build Tools**: Android Gradle Plugin 8.2.0, Kotlin 1.9.22
+- **UI**: Jetpack Compose with Material 3 design system
+- **Architecture**: ComponentActivity with Compose UI, ViewModel for state management
 
 ### Data Flow
 
@@ -120,10 +125,36 @@ The app requires several critical permissions:
 - Instrumented tests for UI interactions and permission handling
 - Focus on notification interception and condition matching logic
 
+## UI Framework and Theming
+
+The app has been migrated to use **Jetpack Compose** with **Material 3** design system:
+
+### Compose Structure
+- **Theme System**: `app/src/main/java/com/eton/notification_me/ui/theme/`
+  - `Color.kt`: Material 3 color scheme definitions
+  - `Theme.kt`: Main theme composable with light/dark mode support
+  - `Type.kt`: Typography definitions
+- **MainActivity**: Converted to ComponentActivity with Compose UI
+- **NotificationSoundActivity**: Converted to ComponentActivity with Compose UI
+
+### Material 3 Features
+- Dynamic color support (Android 12+)
+- Light and dark theme support
+- Adaptive UI components
+- Material 3 color tokens and typography scale
+
+### Build Configuration
+- Compose BOM: 2024.02.00
+- Compose Compiler: 1.5.8
+- Material 3 library integration
+- Navigation Compose support
+
 ## Important Implementation Details
 
-- The app uses traditional View system (not Compose)
+- **UI Framework**: Jetpack Compose with Material 3 design system
+- **State Management**: ViewModel architecture with Compose state
+- **Navigation**: Navigation Compose for screen transitions
+- **Theming**: Material 3 with dynamic color and day/night support
 - Notification listener service auto-starts when permission is granted
 - Chinese language support in UI strings and comments
 - Custom notification icons stored in drawable resources
-- RecyclerView with dynamic item management for condition editing

@@ -10,6 +10,8 @@ class SpUtil(context: Context) {
         const val PACKAGE_NAME_KEY = "package_name_key"
         const val MESSAGE_BODY_KEY = "message_body_key"
         const val LAST_NOTIFICATION_TIME_KEY = "last_notification_time_key"
+        const val NOTIFICATION_SOUND_URI_KEY = "notification_sound_uri_key"
+        const val NOTIFICATION_SOUND_NAME_KEY = "notification_sound_name_key"
     }
 
     private lateinit var sp: SharedPreferences
@@ -64,5 +66,33 @@ class SpUtil(context: Context) {
      */
     fun setLastNotificationTime(timestamp: Long) {
         sp.edit().putLong(LAST_NOTIFICATION_TIME_KEY, timestamp).apply()
+    }
+
+    /**
+     * 獲取通知音效 URI
+     */
+    fun getNotificationSoundUri(): String? {
+        return sp.getString(NOTIFICATION_SOUND_URI_KEY, null)
+    }
+
+    /**
+     * 設定通知音效 URI
+     */
+    fun setNotificationSoundUri(uri: String?) {
+        sp.edit().putString(NOTIFICATION_SOUND_URI_KEY, uri).apply()
+    }
+
+    /**
+     * 獲取通知音效名稱
+     */
+    fun getNotificationSoundName(): String {
+        return sp.getString(NOTIFICATION_SOUND_NAME_KEY, "預設通知音效 (Warning)") ?: "預設通知音效 (Warning)"
+    }
+
+    /**
+     * 設定通知音效名稱
+     */
+    fun setNotificationSoundName(name: String) {
+        sp.edit().putString(NOTIFICATION_SOUND_NAME_KEY, name).apply()
     }
 }
