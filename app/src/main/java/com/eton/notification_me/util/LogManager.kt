@@ -29,7 +29,7 @@ class LogManager private constructor() {
     
     fun addLog(message: String, level: String = "INFO") {
         val timestamp = dateFormat.format(Date())
-        val logEntry = "[$timestamp] [$level] $message"
+        val logEntry = "[$timestamp] $message"
         
         synchronized(logs) {
             logs.add(logEntry)
@@ -51,7 +51,7 @@ class LogManager private constructor() {
     
     fun addNotificationLog(message: String, level: String = "INFO") {
         val timestamp = dateFormat.format(Date())
-        val logEntry = "[$timestamp] [$level] <font color='#00ff00'>$message</font>"
+        val logEntry = "[$timestamp] $message"
         
         synchronized(logs) {
             logs.add(logEntry)
@@ -77,11 +77,16 @@ class LogManager private constructor() {
         }
     }
     
-    fun clearLogs() {
+    fun clearLogs(context: Context? = null) {
         synchronized(logs) {
             logs.clear()
         }
-        addLog("日誌已清除")
+        addLog("🧹 日誌已清除")
+        
+        // 清除後立即保存到文件
+        context?.let { 
+            saveLogsToFile(it)
+        }
     }
     
     fun saveLogsToFile(context: Context): Boolean {
