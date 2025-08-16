@@ -94,8 +94,7 @@ fun LogScreen() {
             ) {
                 FilledTonalButton(
                     onClick = {
-                        logManager.clearLogs()
-                        logManager.addLog("手動清除日誌", "INFO")
+                        logManager.clearLogs(context)
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.filledTonalButtonColors(
@@ -183,13 +182,13 @@ fun LogScreen() {
                 ) {
                     Text(
                         text = if (logText.isNotEmpty()) {
-                            "$ tail -f notification_me.log\n$logText"
+                            logText
                         } else {
-                            "$ tail -f notification_me.log\n等待日誌輸出..."
+                            "等待日誌輸出..."
                         },
                         style = MaterialTheme.typography.bodySmall,
                         fontFamily = FontFamily.Monospace,
-                        color = Color(0xFF00FF00),
+                        color = Color.White,
                         lineHeight = MaterialTheme.typography.bodySmall.lineHeight * 1.2f
                     )
                 }
@@ -208,7 +207,7 @@ fun LogScreen() {
                         text = if (showCursor) "_" else " ",
                         style = MaterialTheme.typography.bodySmall,
                         fontFamily = FontFamily.Monospace,
-                        color = Color(0xFF00FF00),
+                        color = Color.White,
                         modifier = Modifier.align(Alignment.BottomStart)
                     )
                 }
