@@ -202,7 +202,7 @@ fun SoundSelectionScreen(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "重新載入",
+                                text = stringResource(R.string.reload),
                                 style = MaterialTheme.typography.bodySmall
                             )
                         }
@@ -231,7 +231,7 @@ fun SoundSelectionScreen(
                             SoundItemCard(
                                 soundItem = soundItem,
                                 onSoundSelected = { sound ->
-                                    Log.d("NotificationSoundActivity", "🎵 用戶選擇音效: ${sound.name}")
+                                    Log.d("NotificationSoundActivity", "🎵 User selected sound: ${sound.name}")
                                     viewModel.selectSound(sound)
                                     viewModel.saveSoundSelection(context, sound)
                                     onSoundSelected(sound)
@@ -351,13 +351,13 @@ fun SoundItemCard(
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
-                            contentDescription = "已選中",
+                            contentDescription = stringResource(R.string.selected_sound),
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "已選中",
+                            text = stringResource(R.string.selected_sound),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -370,7 +370,7 @@ fun SoundItemCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.PlayArrow,
-                    contentDescription = "播放並選擇",
+                    contentDescription = stringResource(R.string.play_and_select),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
@@ -378,7 +378,7 @@ fun SoundItemCard(
             if (soundItem.isSelected) {
                 Icon(
                     imageVector = Icons.Default.Check,
-                    contentDescription = "已選中",
+                    contentDescription = stringResource(R.string.selected_sound),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
@@ -390,5 +390,5 @@ data class SoundItem(
     val uri: Uri?,
     val name: String,
     val isSelected: Boolean = false,
-    val category: String = "其他"
+    val category: String = "Other"
 )

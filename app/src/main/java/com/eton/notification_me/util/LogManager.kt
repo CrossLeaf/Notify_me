@@ -81,7 +81,7 @@ class LogManager private constructor() {
         synchronized(logs) {
             logs.clear()
         }
-        addLog("🧹 日誌已清除")
+        addLog("🧹 Logs cleared")
         
         // 清除後立即保存到文件
         context?.let { 
@@ -101,10 +101,10 @@ class LogManager private constructor() {
             }
             
             writer.close()
-            addLog("日誌已保存到文件: ${file.absolutePath}")
+            addLog("Logs saved to file: ${file.absolutePath}")
             true
         } catch (e: IOException) {
-            addLog("保存日誌失敗: ${e.message}", "ERROR")
+            addLog("Save logs failed: ${e.message}", "ERROR")
             false
         }
     }
@@ -113,7 +113,7 @@ class LogManager private constructor() {
         return try {
             val file = File(context.filesDir, LOG_FILE_NAME)
             if (!file.exists()) {
-                addLog("日誌文件不存在")
+                addLog("Log file does not exist")
                 return false
             }
             
@@ -123,10 +123,10 @@ class LogManager private constructor() {
                 logs.addAll(lines)
             }
             
-            addLog("從文件載入 ${lines.size} 條日誌")
+            addLog("Loaded ${lines.size} logs from file")
             true
         } catch (e: IOException) {
-            addLog("載入日誌失敗: ${e.message}", "ERROR")
+            addLog("Load logs failed: ${e.message}", "ERROR")
             false
         }
     }

@@ -87,4 +87,36 @@
     <string name="loading_app_progress">載入中... (%1$d/%2$d)</string>
     <string name="load_complete">載入完成</string>
     <string name="load_failed">載入失敗: %1$s</string>
+    
+    <!-- Log messages -->
+    <string name="user_selected_sound">🎵 用戶選擇音效: %1$s</string>
+    <string name="other_category">其他</string>
+    
+    <!-- LogManager messages -->
+    <string name="logs_cleared">🧹 日誌已清除</string>
+    <string name="logs_saved_to_file">日誌已保存到文件: %1$s</string>
+    <string name="save_logs_failed">保存日誌失敗: %1$s</string>
+    <string name="log_file_not_exist">日誌文件不存在</string>
+    <string name="loaded_logs_from_file">從文件載入 %1$d 條日誌</string>
+    <string name="load_logs_failed">載入日誌失敗: %1$s</string>
+    
+    <!-- SoundViewModel messages -->
+    <string name="loading_system_notification_sounds">載入系統通知音效...</string>
+    <string name="loading_system_ringtones_text">載入系統鈴聲...</string>
+    <string name="loading_system_alarm_sounds">載入系統鬧鐘音效...</string>
+    <string name="notification_sound_num">通知音效 %1$d</string>
+    <string name="ringtone_num">鈴聲 %1$d</string>
+    <string name="alarm_sound_num">鬧鐘音效 %1$d</string>
+    <string name="system_notification_category">系統通知</string>
+    <string name="system_ringtone_category">系統鈴聲</string>
+    <string name="system_alarm_category">系統鬧鐘</string>
+    <string name="unknown_audio_file_text">未知音檔</string>
+    <string name="unknown_artist_text">未知藝術家</string>
+    <string name="media_file_category">媒體檔案</string>
+    <string name="audio_file_category">音檔</string>
+    <string name="selected_sound_log">🎵 選擇音效: %1$s</string>
+    <string name="sound_selection_log">音效 %1$s: %2$s</string>
+    <string name="sound_selection_updated">✅ 音效選擇狀態已更新</string>
+    <string name="sound_cache_reset">🔄 已重置音效快取</string>
+    <string name="sound_cache_reset_failed">無法重置音效快取: %1$s</string>
 </resources>

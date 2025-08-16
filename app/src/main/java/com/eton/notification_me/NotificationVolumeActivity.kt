@@ -22,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -87,12 +88,12 @@ fun VolumeScreen(viewModel: VolumeViewModel = viewModel()) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "通知音量控制",
+                    text = stringResource(R.string.notification_volume_control),
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    text = "調整通知音量和自動化設定",
+                    text = stringResource(R.string.adjust_notification_volume),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
@@ -109,7 +110,7 @@ fun VolumeScreen(viewModel: VolumeViewModel = viewModel()) {
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "音量控制",
+                    text = stringResource(R.string.volume_control),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )
@@ -155,7 +156,7 @@ fun VolumeScreen(viewModel: VolumeViewModel = viewModel()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 
                 Text(
-                    text = "當前音量: ${viewModel.currentVolume} / ${viewModel.maxVolume}",
+                    text = stringResource(R.string.current_volume, viewModel.currentVolume, viewModel.maxVolume),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -172,7 +173,7 @@ fun VolumeScreen(viewModel: VolumeViewModel = viewModel()) {
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "自動化設定",
+                    text = stringResource(R.string.automation_settings),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )
@@ -188,12 +189,12 @@ fun VolumeScreen(viewModel: VolumeViewModel = viewModel()) {
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = "自動音量調整",
+                            text = stringResource(R.string.auto_volume_adjustment),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium
                         )
                         Text(
-                            text = "根據網路狀態自動調整通知音量",
+                            text = stringResource(R.string.auto_adjust_based_on_network),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -234,7 +235,7 @@ fun VolumeScreen(viewModel: VolumeViewModel = viewModel()) {
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "自動音量調整服務已啟用",
+                                text = stringResource(R.string.auto_volume_service_enabled),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onTertiaryContainer
                             )

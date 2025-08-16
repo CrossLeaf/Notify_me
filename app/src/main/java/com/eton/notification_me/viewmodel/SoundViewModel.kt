@@ -71,7 +71,7 @@ class SoundViewModel : ViewModel() {
                 _soundList.add(defaultSound)
                 
                 // Load system notification sounds
-                loadingText = "載入系統通知音效..."
+                loadingText = "Loading system notification sounds..."
                 loadingProgress = 0.2f
                 try {
                     val notificationSounds = withTimeout(10000L) { // 10 seconds timeout
@@ -86,7 +86,7 @@ class SoundViewModel : ViewModel() {
                 }
                 
                 // Load system ringtones
-                loadingText = "載入系統鈴聲..."
+                loadingText = "Loading system ringtones..."
                 loadingProgress = 0.4f
                 try {
                     val ringtones = withTimeout(10000L) { // 10 seconds timeout
@@ -101,7 +101,7 @@ class SoundViewModel : ViewModel() {
                 }
                 
                 // Load system alarm sounds
-                loadingText = "載入系統鬧鐘音效..."
+                loadingText = "Loading system alarm sounds..."
                 loadingProgress = 0.6f
                 try {
                     val alarmSounds = withTimeout(10000L) { // 10 seconds timeout
@@ -116,7 +116,7 @@ class SoundViewModel : ViewModel() {
                 }
                 
                 // Load media store audio files
-                loadingText = "載入媒體庫音檔..."
+                loadingText = "Loading media library audio files..."
                 loadingProgress = 0.8f
                 try {
                     val mediaFiles = withTimeout(15000L) { // 15 seconds timeout for media files
@@ -158,16 +158,16 @@ class SoundViewModel : ViewModel() {
                         val notificationUri = ringtoneManager.getRingtoneUri(cursor.position)
                         val name = try {
                             ringtoneManager.getRingtone(cursor.position)?.getTitle(context) 
-                                ?: "通知音效 ${cursor.position + 1}"
+                                ?: "Notification sound ${cursor.position + 1}"
                         } catch (e: Exception) {
-                            "通知音效 ${cursor.position + 1}"
+                            "Notification sound ${cursor.position + 1}"
                         }
                         
                         sounds.add(SoundItem(
                             uri = notificationUri,
                             name = name,
                             isSelected = notificationUri.toString() == currentSoundUri,
-                            category = "系統通知"
+                            category = "System notification"
                         ))
                     } catch (e: Exception) {
                         Log.w("SoundViewModel", "Skip notification sound at position ${cursor.position}: ${e.message}")
@@ -197,16 +197,16 @@ class SoundViewModel : ViewModel() {
                         val ringtoneUri = ringtoneManager.getRingtoneUri(cursor.position)
                         val name = try {
                             ringtoneManager.getRingtone(cursor.position)?.getTitle(context) 
-                                ?: "鈴聲 ${cursor.position + 1}"
+                                ?: "Ringtone ${cursor.position + 1}"
                         } catch (e: Exception) {
-                            "鈴聲 ${cursor.position + 1}"
+                            "Ringtone ${cursor.position + 1}"
                         }
                         
                         sounds.add(SoundItem(
                             uri = ringtoneUri,
                             name = name,
                             isSelected = ringtoneUri.toString() == currentSoundUri,
-                            category = "系統鈴聲"
+                            category = "System ringtone"
                         ))
                         count++
                     } catch (e: Exception) {
@@ -237,16 +237,16 @@ class SoundViewModel : ViewModel() {
                         val alarmUri = ringtoneManager.getRingtoneUri(cursor.position)
                         val name = try {
                             ringtoneManager.getRingtone(cursor.position)?.getTitle(context) 
-                                ?: "鬧鐘音效 ${cursor.position + 1}"
+                                ?: "Alarm sound ${cursor.position + 1}"
                         } catch (e: Exception) {
-                            "鬧鐘音效 ${cursor.position + 1}"
+                            "Alarm sound ${cursor.position + 1}"
                         }
                         
                         sounds.add(SoundItem(
                             uri = alarmUri,
                             name = name,
                             isSelected = alarmUri.toString() == currentSoundUri,
-                            category = "系統鬧鐘"
+                            category = "System alarm"
                         ))
                         count++
                     } catch (e: Exception) {
@@ -297,8 +297,8 @@ class SoundViewModel : ViewModel() {
                 while (c.moveToNext() && count < 100) { // Limit to 100 files
                     try {
                         val id = c.getLong(idColumn)
-                        val title = c.getString(titleColumn) ?: "未知音檔"
-                        val artist = c.getString(artistColumn) ?: "未知藝術家"
+                        val title = c.getString(titleColumn) ?: "Unknown audio file"
+                        val artist = c.getString(artistColumn) ?: "Unknown artist"
                         val duration = c.getLong(durationColumn)
                         val data = c.getString(dataColumn)
                         val mimeType = c.getString(mimeTypeColumn) ?: ""
@@ -308,16 +308,16 @@ class SoundViewModel : ViewModel() {
                         
                         val uri = Uri.withAppendedPath(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id.toString())
                         val file = File(data)
-                        val displayName = if (title != "未知音檔") {
+                        val displayName = if (title != "Unknown audio file") {
                             "$title - $artist"
                         } else {
                             file.nameWithoutExtension
                         }
                         
                         val category = when {
-                            mimeType.contains("audio") -> "媒體檔案"
-                            file.extension.lowercase() in listOf("mp3", "wav", "ogg", "m4a", "aac") -> "音檔"
-                            else -> "其他"
+                            mimeType.contains("audio") -> "Media file"
+                            file.extension.lowercase() in listOf("mp3", "wav", "ogg", "m4a", "aac") -> "Audio file"
+                            else -> "Other"
                         }
                         
                         sounds.add(SoundItem(
@@ -340,18 +340,18 @@ class SoundViewModel : ViewModel() {
     
     fun selectSound(soundItem: SoundItem) {
         viewModelScope.launch {
-            Log.d("SoundViewModel", "🎵 選擇音效: ${soundItem.name}")
+            Log.d("SoundViewModel", "🎵 Selected sound: ${soundItem.name}")
             
             // Update selection state by replacing the list
             val updatedList = _soundList.map { item ->
                 val isSelected = item.uri == soundItem.uri
-                Log.d("SoundViewModel", "音效 ${item.name}: $isSelected")
+                Log.d("SoundViewModel", "Sound ${item.name}: $isSelected")
                 item.copy(isSelected = isSelected)
             }
             _soundList.clear()
             _soundList.addAll(updatedList)
             
-            Log.d("SoundViewModel", "✅ 音效選擇狀態已更新")
+            Log.d("SoundViewModel", "✅ Sound selection status updated")
         }
     }
     
@@ -368,9 +368,9 @@ class SoundViewModel : ViewModel() {
                 lastSoundUriField.isAccessible = true
                 lastSoundUriField.set(null, null)
                 
-                Log.d("SoundViewModel", "🔄 已重置音效快取")
+                Log.d("SoundViewModel", "🔄 Sound cache reset")
             } catch (e: Exception) {
-                Log.w("SoundViewModel", "無法重置音效快取: ${e.message}")
+                Log.w("SoundViewModel", "Cannot reset sound cache: ${e.message}")
             }
         }
     }

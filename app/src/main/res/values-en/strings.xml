@@ -87,4 +87,36 @@
     <string name="loading_app_progress">Loading... (%1$d/%2$d)</string>
     <string name="load_complete">Load complete</string>
     <string name="load_failed">Load failed: %1$s</string>
+    
+    <!-- Log messages -->
+    <string name="user_selected_sound">🎵 User selected sound: %1$s</string>
+    <string name="other_category">Other</string>
+    
+    <!-- LogManager messages -->
+    <string name="logs_cleared">🧹 Logs cleared</string>
+    <string name="logs_saved_to_file">Logs saved to file: %1$s</string>
+    <string name="save_logs_failed">Save logs failed: %1$s</string>
+    <string name="log_file_not_exist">Log file does not exist</string>
+    <string name="loaded_logs_from_file">Loaded %1$d logs from file</string>
+    <string name="load_logs_failed">Load logs failed: %1$s</string>
+    
+    <!-- SoundViewModel messages -->
+    <string name="loading_system_notification_sounds">Loading system notification sounds...</string>
+    <string name="loading_system_ringtones_text">Loading system ringtones...</string>
+    <string name="loading_system_alarm_sounds">Loading system alarm sounds...</string>
+    <string name="notification_sound_num">Notification sound %1$d</string>
+    <string name="ringtone_num">Ringtone %1$d</string>
+    <string name="alarm_sound_num">Alarm sound %1$d</string>
+    <string name="system_notification_category">System notification</string>
+    <string name="system_ringtone_category">System ringtone</string>
+    <string name="system_alarm_category">System alarm</string>
+    <string name="unknown_audio_file_text">Unknown audio file</string>
+    <string name="unknown_artist_text">Unknown artist</string>
+    <string name="media_file_category">Media file</string>
+    <string name="audio_file_category">Audio file</string>
+    <string name="selected_sound_log">🎵 Selected sound: %1$s</string>
+    <string name="sound_selection_log">Sound %1$s: %2$s</string>
+    <string name="sound_selection_updated">✅ Sound selection status updated</string>
+    <string name="sound_cache_reset">🔄 Sound cache reset</string>
+    <string name="sound_cache_reset_failed">Cannot reset sound cache: %1$s</string>
 </resources>
