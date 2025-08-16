@@ -32,7 +32,7 @@ class SoundViewModel : ViewModel() {
     var loadingProgress by mutableStateOf(0f)
         private set
     
-    var loadingText by mutableStateOf("載入中...")
+    var loadingText by mutableStateOf("Loading...")
         private set
     
     fun loadSounds(context: Context) {
@@ -50,23 +50,23 @@ class SoundViewModel : ViewModel() {
         viewModelScope.launch {
             isLoading = true
             loadingProgress = 0f
-            loadingText = "開始載入..."
+            loadingText = "Start loading..."
             
             try {
                 val spUtil = SpUtil(context)
                 val currentSoundUri = spUtil.getNotificationSoundUri()
                 
                 // Add default sound option (using project's warning.mp3)
-                loadingText = "載入預設音效..."
+                loadingText = "Loading default sounds..."
                 loadingProgress = 0.1f
                 
                 val defaultSoundUri = Uri.parse("${android.content.ContentResolver.SCHEME_ANDROID_RESOURCE}://${context.packageName}/${R.raw.warning}")
                 val isDefaultSelected = currentSoundUri == null || currentSoundUri == defaultSoundUri.toString()
                 val defaultSound = SoundItem(
                     uri = defaultSoundUri,
-                    name = "預設通知音效 (Warning)",
+                    name = "Default notification sound (Warning)",
                     isSelected = isDefaultSelected,
-                    category = "應用內建"
+                    category = "Built-in app"
                 )
                 _soundList.add(defaultSound)
                 
@@ -130,14 +130,14 @@ class SoundViewModel : ViewModel() {
                     Log.w("SoundViewModel", "Failed to load media files: ${e.message}")
                 }
                 
-                loadingText = "完成載入"
+                loadingText = "Loading complete"
                 loadingProgress = 1.0f
                 
                 Log.d("SoundViewModel", "Total sounds loaded: ${_soundList.size}")
                 
             } catch (e: Exception) {
                 Log.e("SoundViewModel", "Error loading sounds: ${e.message}")
-                loadingText = "載入失敗: ${e.message}"
+                loadingText = "Loading failed: ${e.message}"
             } finally {
                 isLoading = false
                 loadingProgress = 0f

@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -62,14 +63,14 @@ class MainActivity : ComponentActivity() {
         // Initialize dependencies
         val spUtil = SpUtil(this)
         logManager = LogManager.getInstance()
-        logManager.addLog("MainActivity 啟動", "INFO")
+        logManager.addLog("MainActivity started", "INFO")
         logManager.loadLogsFromFile(this)
         
         // Initialize default sound settings
         if (spUtil.getNotificationSoundUri() == null) {
             val defaultSoundUri = android.net.Uri.parse("${android.content.ContentResolver.SCHEME_ANDROID_RESOURCE}://${packageName}/${R.raw.warning}")
             spUtil.setNotificationSoundUri(defaultSoundUri.toString())
-            spUtil.setNotificationSoundName("預設通知音效 (Warning)")
+            spUtil.setNotificationSoundName(getString(R.string.default_notification_sound))
         }
         
         // Create notification channel
@@ -106,10 +107,10 @@ class MainActivity : ComponentActivity() {
             }
             alertDialog = AlertDialog.Builder(this@MainActivity)
                 .setTitle(R.string.app_name)
-                .setMessage("請啟用通知欄擷取權限")
+                .setMessage(getString(R.string.enable_notification_access_permission))
                 .setIcon(R.mipmap.ic_launcher_round)
                 .setOnCancelListener { finish() }
-                .setPositiveButton("前往") { _, _ ->
+                .setPositiveButton(getString(R.string.go_to_settings)) { _, _ ->
                     startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
                 }.create()
             alertDialog?.show()
@@ -120,7 +121,7 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
         logUpdateHandler.removeCallbacks(logUpdateRunnable)
         logManager.saveLogsToFile(this)
-        logManager.addLog("MainActivity 銷毀", "INFO")
+        logManager.addLog("MainActivity destroyed", "INFO")
     }
 
     override fun onPause() {
@@ -166,7 +167,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
     ) {
         // Title
         Text(
-            text = "通知監控設定",
+            text = stringResource(R.string.notification_monitor_settings),
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -186,7 +187,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "監控條件",
+                        text = stringResource(R.string.monitoring_conditions),
                         style = MaterialTheme.typography.titleMedium
                     )
                     Row {
@@ -195,7 +196,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Add,
-                                contentDescription = "新增條件",
+                                contentDescription = stringResource(R.string.add_condition),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
@@ -204,7 +205,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Save,
-                                contentDescription = "保存條件",
+                                contentDescription = stringResource(R.string.save_conditions),
                                 tint = MaterialTheme.colorScheme.secondary
                             )
                         }
@@ -255,7 +256,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "點擊右上角的 + 按鈕新增監控條件",
+                                text = stringResource(R.string.click_plus_to_add_condition),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
@@ -275,7 +276,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "應用程式設定",
+                    text = stringResource(R.string.app_settings),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -299,7 +300,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "選擇要監聽的應用程式",
+                        text = stringResource(R.string.select_apps_to_monitor),
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
@@ -323,7 +324,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "設定通知聲音自動化處理",
+                        text = stringResource(R.string.notification_sound_automation),
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
@@ -347,7 +348,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "選擇通知音效",
+                        text = stringResource(R.string.select_notification_sound),
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
@@ -372,7 +373,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "查看運行日誌",
+                        text = stringResource(R.string.view_runtime_logs),
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
@@ -408,7 +409,7 @@ fun ConditionItem(
                 modifier = Modifier.weight(1f),
                 placeholder = { 
                     Text(
-                        text = "輸入監控條件 (例如：急件、重要通知)",
+                        text = stringResource(R.string.enter_condition),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -430,7 +431,7 @@ fun ConditionItem(
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = "刪除條件",
+                    contentDescription = stringResource(R.string.delete_condition),
                     tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(20.dp)
                 )

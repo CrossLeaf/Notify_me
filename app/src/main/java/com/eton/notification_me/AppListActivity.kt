@@ -20,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -94,12 +95,12 @@ fun AppListScreen(viewModel: AppListViewModel = viewModel()) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "應用程式選擇",
+                    text = stringResource(R.string.app_selection),
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    text = "選擇要監控通知的應用程式",
+                    text = stringResource(R.string.select_apps_for_monitoring),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
@@ -121,15 +122,15 @@ fun AppListScreen(viewModel: AppListViewModel = viewModel()) {
             ) {
                 Text(
                     text = if (viewModel.isLoading) 
-                        "掃描中... (${viewModel.appList.size})" 
+                        stringResource(R.string.scanning, viewModel.appList.size) 
                     else if (searchQuery.isEmpty()) 
-                        "已安裝應用程式: ${viewModel.appList.size}" 
+                        stringResource(R.string.installed_apps, viewModel.appList.size) 
                     else 
-                        "搜尋結果: ${filteredApps.size}",
+                        stringResource(R.string.search_results, filteredApps.size),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "已選擇: ${viewModel.appList.count { it.check }}",
+                    text = stringResource(R.string.selected, viewModel.appList.count { it.check }),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium
@@ -150,12 +151,12 @@ fun AppListScreen(viewModel: AppListViewModel = viewModel()) {
                     .fillMaxWidth()
                     .padding(16.dp),
                 placeholder = {
-                    Text(text = "搜尋應用程式...")
+                    Text(text = stringResource(R.string.search_apps))
                 },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = "搜尋"
+                        contentDescription = stringResource(R.string.search)
                     )
                 },
                 trailingIcon = {
@@ -168,7 +169,7 @@ fun AppListScreen(viewModel: AppListViewModel = viewModel()) {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Clear,
-                                contentDescription = "清除"
+                                contentDescription = stringResource(R.string.clear)
                             )
                         }
                     }

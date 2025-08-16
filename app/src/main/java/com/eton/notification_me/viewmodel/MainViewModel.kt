@@ -64,7 +64,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _conditions.addAll(filteredConditions)
         
         isLoading = false
-        successMessage = "保存成功"
+        successMessage = "Save successful"
         
         // Clear success message after delay
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({

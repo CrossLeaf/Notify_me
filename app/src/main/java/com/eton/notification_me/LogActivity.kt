@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.eton.notification_me.ui.theme.NotificationMeTheme
@@ -68,12 +69,12 @@ fun LogScreen() {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "運行日誌",
+                    text = stringResource(R.string.runtime_logs),
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    text = "應用程式運行和通知處理記錄",
+                    text = stringResource(R.string.app_runtime_notification_records),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
@@ -108,7 +109,7 @@ fun LogScreen() {
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("清除日誌")
+                    Text(stringResource(R.string.clear_logs))
                 }
                 
                 FilledTonalButton(
@@ -128,7 +129,7 @@ fun LogScreen() {
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("保存日誌")
+                    Text(stringResource(R.string.save_logs))
                 }
             }
         }
@@ -147,11 +148,11 @@ fun LogScreen() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "日誌數量: ${logManager.getAllLogs().size} 條",
+                    text = stringResource(R.string.log_count, logManager.getAllLogs().size),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "實時更新",
+                    text = stringResource(R.string.real_time_updates),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -184,7 +185,7 @@ fun LogScreen() {
                         text = if (logText.isNotEmpty()) {
                             logText
                         } else {
-                            "等待日誌輸出..."
+                            stringResource(R.string.waiting_for_log_output)
                         },
                         style = MaterialTheme.typography.bodySmall,
                         fontFamily = FontFamily.Monospace,

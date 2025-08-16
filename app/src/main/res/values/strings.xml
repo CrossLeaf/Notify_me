@@ -1,4 +1,90 @@
 <resources>
     <string name="app_name">Notification_me</string>
     <string name="channel_description">頻道描述</string>
+    
+    <!-- Main Activity -->
+    <string name="notification_monitor_settings">通知監控設定</string>
+    <string name="enable_notification_access_permission">請啟用通知欄擷取權限</string>
+    <string name="go_to_settings">前往</string>
+    <string name="monitoring_conditions">監控條件</string>
+    <string name="add_condition">新增條件</string>
+    <string name="save_conditions">保存條件</string>
+    <string name="click_plus_to_add_condition">點擊右上角的 + 按鈕新增監控條件</string>
+    <string name="app_settings">應用程式設定</string>
+    <string name="select_apps_to_monitor">選擇要監聽的應用程式</string>
+    <string name="notification_sound_automation">設定通知聲音自動化處理</string>
+    <string name="select_notification_sound">選擇通知音效</string>
+    <string name="view_runtime_logs">查看運行日誌</string>
+    <string name="enter_condition">輸入監控條件 (例如：急件、重要通知)</string>
+    <string name="delete_condition">刪除條件</string>
+    
+    <!-- App List Activity -->
+    <string name="app_selection">應用程式選擇</string>
+    <string name="select_apps_for_monitoring">選擇要監控通知的應用程式</string>
+    <string name="scanning">掃描中... (%1$d)</string>
+    <string name="installed_apps">已安裝應用程式: %1$d</string>
+    <string name="search_results">搜尋結果: %1$d</string>
+    <string name="selected">已選擇: %1$d</string>
+    <string name="search_apps">搜尋應用程式...</string>
+    <string name="search">搜尋</string>
+    <string name="clear">清除</string>
+    
+    <!-- Log Activity -->
+    <string name="runtime_logs">運行日誌</string>
+    <string name="app_runtime_notification_records">應用程式運行和通知處理記錄</string>
+    <string name="clear_logs">清除日誌</string>
+    <string name="save_logs">保存日誌</string>
+    <string name="log_count">日誌數量: %1$d 條</string>
+    <string name="real_time_updates">實時更新</string>
+    <string name="waiting_for_log_output">等待日誌輸出...</string>
+    
+    <!-- Notification Sound Activity -->
+    <string name="select_notification_sound_title">選擇通知音效</string>
+    <string name="click_sound_name_to_preview">點擊音效名稱可預覽並選擇</string>
+    <string name="test_notification">測試通知</string>
+    <string name="available_sounds">可用音效</string>
+    <string name="found_sounds_loading">已找到 %1$d 個音效 (載入中...)</string>
+    <string name="total_sounds_found">共找到 %1$d 個音效</string>
+    <string name="reload">重新載入</string>
+    <string name="selected_sound">已選中</string>
+    <string name="play_and_select">播放並選擇</string>
+    
+    <!-- Notification Volume Activity -->
+    <string name="notification_volume_control">通知音量控制</string>
+    <string name="adjust_notification_volume">調整通知音量和自動化設定</string>
+    <string name="volume_control">音量控制</string>
+    <string name="current_volume">當前音量: %1$d / %2$d</string>
+    <string name="automation_settings">自動化設定</string>
+    <string name="auto_volume_adjustment">自動音量調整</string>
+    <string name="auto_adjust_based_on_network">根據網路狀態自動調整通知音量</string>
+    <string name="auto_volume_service_enabled">自動音量調整服務已啟用</string>
+    
+    <!-- Default values -->
+    <string name="default_notification_sound">預設通知音效 (Warning)</string>
+    <string name="unknown_audio_file">未知音檔</string>
+    <string name="unknown_artist">未知藝術家</string>
+    <string name="built_in_app">應用內建</string>
+    <string name="system_notification">系統通知</string>
+    <string name="system_ringtone">系統鈴聲</string>
+    <string name="system_alarm">系統鬧鐘</string>
+    <string name="media_file">媒體檔案</string>
+    <string name="audio_file">音檔</string>
+    <string name="other">其他</string>
+    
+    <!-- Status messages -->
+    <string name="save_successful">保存成功</string>
+    <string name="loading">載入中...</string>
+    <string name="start_loading">開始載入...</string>
+    <string name="loading_default_sounds">載入預設音效...</string>
+    <string name="loading_system_notifications">載入系統通知音效...</string>
+    <string name="loading_system_ringtones">載入系統鈴聲...</string>
+    <string name="loading_system_alarms">載入系統鬧鐘音效...</string>
+    <string name="loading_media_files">載入媒體庫音檔...</string>
+    <string name="loading_complete">完成載入</string>
+    <string name="loading_failed">載入失敗: %1$s</string>
+    <string name="scanning_installed_apps">正在掃描已安裝的應用程式...</string>
+    <string name="loading_app_info">正在載入應用程式資訊...</string>
+    <string name="loading_app_progress">載入中... (%1$d/%2$d)</string>
+    <string name="load_complete">載入完成</string>
+    <string name="load_failed">載入失敗: %1$s</string>
 </resources>

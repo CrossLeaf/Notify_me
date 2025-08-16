@@ -19,7 +19,7 @@ class NotificationMonitorService : NotificationListenerService() {
     override fun onListenerConnected() {
         super.onListenerConnected()
         Log.d(TAG, "🔄 服務已連接 - 版本 3.0 - 時間: ${System.currentTimeMillis()}")
-        LogManager.getInstance().addLog("📡 服務已啟動 v3.0")
+        LogManager.getInstance().addLog("📡 Service started v3.0")
     }
 
     

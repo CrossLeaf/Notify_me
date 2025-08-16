@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -72,14 +73,14 @@ class NotificationSoundActivity : ComponentActivity() {
         
         // Ensure test condition exists
         val currentConditions = spUtil.getCondition()?.toMutableSet() ?: mutableSetOf()
-        currentConditions.add("測試")
+        currentConditions.add("test")
         spUtil.editCondition(currentConditions)
         
         val notificationUtils = NotificationUtils()
         notificationUtils.sendNotification(
             context = this,
             packageName = packageName,
-            messageBody = "測試通知 - ${spUtil.getNotificationSoundName()} - ${System.currentTimeMillis()}",
+            messageBody = "Test notification - ${spUtil.getNotificationSoundName()} - ${System.currentTimeMillis()}",
             smallIcon = null
         )
     }
@@ -130,12 +131,12 @@ fun SoundSelectionScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "選擇通知音效",
+                    text = stringResource(R.string.select_notification_sound_title),
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    text = "點擊音效名稱可預覽並選擇",
+                    text = stringResource(R.string.click_sound_name_to_preview),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
@@ -152,7 +153,7 @@ fun SoundSelectionScreen(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("測試通知")
+                    Text(stringResource(R.string.test_notification))
                 }
             }
         }
@@ -165,7 +166,7 @@ fun SoundSelectionScreen(
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "可用音效",
+                    text = stringResource(R.string.available_sounds),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -180,9 +181,9 @@ fun SoundSelectionScreen(
                 ) {
                     Text(
                         text = if (viewModel.isLoading) 
-                            "已找到 ${viewModel.soundList.size} 個音效 (載入中...)" 
+                            stringResource(R.string.found_sounds_loading, viewModel.soundList.size) 
                         else 
-                            "共找到 ${viewModel.soundList.size} 個音效",
+                            stringResource(R.string.total_sounds_found, viewModel.soundList.size),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -196,7 +197,7 @@ fun SoundSelectionScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Refresh,
-                                contentDescription = "重新載入",
+                                contentDescription = stringResource(R.string.reload),
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))

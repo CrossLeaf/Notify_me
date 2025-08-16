@@ -1,0 +1,90 @@
+<resources>
+    <string name="app_name">Notification_me</string>
+    <string name="channel_description">Channel description</string>
+    
+    <!-- Main Activity -->
+    <string name="notification_monitor_settings">Notification Monitor Settings</string>
+    <string name="enable_notification_access_permission">Please enable notification access permission</string>
+    <string name="go_to_settings">Go to Settings</string>
+    <string name="monitoring_conditions">Monitoring Conditions</string>
+    <string name="add_condition">Add Condition</string>
+    <string name="save_conditions">Save Conditions</string>
+    <string name="click_plus_to_add_condition">Click the + button in the top right corner to add monitoring conditions</string>
+    <string name="app_settings">App Settings</string>
+    <string name="select_apps_to_monitor">Select apps to monitor</string>
+    <string name="notification_sound_automation">Notification sound automation</string>
+    <string name="select_notification_sound">Select notification sound</string>
+    <string name="view_runtime_logs">View runtime logs</string>
+    <string name="enter_condition">Enter monitoring condition (e.g.: urgent, important notification)</string>
+    <string name="delete_condition">Delete condition</string>
+    
+    <!-- App List Activity -->
+    <string name="app_selection">App Selection</string>
+    <string name="select_apps_for_monitoring">Select apps for notification monitoring</string>
+    <string name="scanning">Scanning... (%1$d)</string>
+    <string name="installed_apps">Installed apps: %1$d</string>
+    <string name="search_results">Search results: %1$d</string>
+    <string name="selected">Selected: %1$d</string>
+    <string name="search_apps">Search apps...</string>
+    <string name="search">Search</string>
+    <string name="clear">Clear</string>
+    
+    <!-- Log Activity -->
+    <string name="runtime_logs">Runtime Logs</string>
+    <string name="app_runtime_notification_records">App runtime and notification processing records</string>
+    <string name="clear_logs">Clear Logs</string>
+    <string name="save_logs">Save Logs</string>
+    <string name="log_count">Log count: %1$d entries</string>
+    <string name="real_time_updates">Real-time updates</string>
+    <string name="waiting_for_log_output">Waiting for log output...</string>
+    
+    <!-- Notification Sound Activity -->
+    <string name="select_notification_sound_title">Select Notification Sound</string>
+    <string name="click_sound_name_to_preview">Click sound name to preview and select</string>
+    <string name="test_notification">Test Notification</string>
+    <string name="available_sounds">Available Sounds</string>
+    <string name="found_sounds_loading">Found %1$d sounds (loading...)</string>
+    <string name="total_sounds_found">Total %1$d sounds found</string>
+    <string name="reload">Reload</string>
+    <string name="selected_sound">Selected</string>
+    <string name="play_and_select">Play and select</string>
+    
+    <!-- Notification Volume Activity -->
+    <string name="notification_volume_control">Notification Volume Control</string>
+    <string name="adjust_notification_volume">Adjust notification volume and automation settings</string>
+    <string name="volume_control">Volume Control</string>
+    <string name="current_volume">Current volume: %1$d / %2$d</string>
+    <string name="automation_settings">Automation Settings</string>
+    <string name="auto_volume_adjustment">Auto volume adjustment</string>
+    <string name="auto_adjust_based_on_network">Automatically adjust notification volume based on network status</string>
+    <string name="auto_volume_service_enabled">Auto volume adjustment service enabled</string>
+    
+    <!-- Default values -->
+    <string name="default_notification_sound">Default notification sound (Warning)</string>
+    <string name="unknown_audio_file">Unknown audio file</string>
+    <string name="unknown_artist">Unknown artist</string>
+    <string name="built_in_app">Built-in app</string>
+    <string name="system_notification">System notification</string>
+    <string name="system_ringtone">System ringtone</string>
+    <string name="system_alarm">System alarm</string>
+    <string name="media_file">Media file</string>
+    <string name="audio_file">Audio file</string>
+    <string name="other">Other</string>
+    
+    <!-- Status messages -->
+    <string name="save_successful">Save successful</string>
+    <string name="loading">Loading...</string>
+    <string name="start_loading">Start loading...</string>
+    <string name="loading_default_sounds">Loading default sounds...</string>
+    <string name="loading_system_notifications">Loading system notification sounds...</string>
+    <string name="loading_system_ringtones">Loading system ringtones...</string>
+    <string name="loading_system_alarms">Loading system alarm sounds...</string>
+    <string name="loading_media_files">Loading media library audio files...</string>
+    <string name="loading_complete">Loading complete</string>
+    <string name="loading_failed">Loading failed: %1$s</string>
+    <string name="scanning_installed_apps">Scanning installed apps...</string>
+    <string name="loading_app_info">Loading app info...</string>
+    <string name="loading_app_progress">Loading... (%1$d/%2$d)</string>
+    <string name="load_complete">Load complete</string>
+    <string name="load_failed">Load failed: %1$s</string>
+</resources>

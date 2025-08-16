@@ -86,7 +86,7 @@ class SpUtil(context: Context) {
      * 獲取通知音效名稱
      */
     fun getNotificationSoundName(): String {
-        return sp.getString(NOTIFICATION_SOUND_NAME_KEY, "預設通知音效 (Warning)") ?: "預設通知音效 (Warning)"
+        return sp.getString(NOTIFICATION_SOUND_NAME_KEY, "Default notification sound (Warning)") ?: "Default notification sound (Warning)"
     }
 
     /**
