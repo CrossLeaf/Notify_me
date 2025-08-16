@@ -45,7 +45,7 @@
 
         <meta-data
             android:name="com.eton.notification_me.smallicon"
-            android:resource="@drawable/spy_notify" />
+            android:resource="@drawable/ic_notification_small" />
 
         <activity
             android:name=".MainActivity"
