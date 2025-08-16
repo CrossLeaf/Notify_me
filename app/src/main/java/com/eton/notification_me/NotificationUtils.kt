@@ -35,13 +35,11 @@ open class NotificationUtils {
         smallIcon: Drawable?
     ) {
         val logManager = LogManager.getInstance()
+        val appName = getLabel(context, packageName)
         
         Log.d("NotificationUtils", "=== 開始處理通知 ===")
-        Log.d("NotificationUtils", "Package: $packageName")
+        Log.d("NotificationUtils", "App: $appName")
         Log.d("NotificationUtils", "Message: $messageBody")
-        
-        logManager.addLog("開始處理通知 - 包名: $packageName", "INFO")
-        logManager.addNotificationLog("訊息內容: $messageBody", "DEBUG")
         
         val spUtil = SpUtil(context)
         
@@ -68,7 +66,7 @@ open class NotificationUtils {
         // 僅送出被選中的 app
         if (!spUtil.getPackageName().contains(packageName)) {
             Log.d("NotificationUtils", "應用程式未被選中，跳過處理")
-            logManager.addLog("應用程式未被選中，跳過處理: $packageName", "INFO")
+            logManager.addLog("🚫 $appName 未監控")
             return
         }
         
@@ -89,7 +87,7 @@ open class NotificationUtils {
                 // 如果條件不符合，直接返回
                 if (!isMatch) {
                     Log.d("TAG", "sendNotification: 條件不符合，跳過處理")
-                    logManager.addNotificationLog("條件不符合，跳過處理: $messageBody", "INFO")
+                    logManager.addNotificationLog("❌ 條件不符合")
                     return
                 }
                 
@@ -107,7 +105,7 @@ open class NotificationUtils {
                 
                 // 記錄訊息
                 Log.d("NotificationUtils", "處理訊息: $messageBody")
-                logManager.addNotificationLog("關鍵字匹配，準備發送通知: $messageBody", "INFO")
+                logManager.addNotificationLog("關鍵字匹配，準備發送通知: $messageBody (來自: $appName)", "INFO")
                 
                 // 更新最後處理的訊息內容
                 spUtil.editMessageBody(messageBody)
@@ -118,7 +116,7 @@ open class NotificationUtils {
                 
                 val builder = NotificationCompat.Builder(context, currentChannelId)
                     .setLargeIcon(
-                        ContextCompat.getDrawable(context, R.drawable.spy_notify)?.toBitmap()
+                        ContextCompat.getDrawable(context, R.drawable.ic_notification)?.toBitmap()
                     )
                     .setContentTitle("你被 tag 了 - ${getLabel(context, packageName)}")
                     .setContentText("$messageBody [$timestamp]")
@@ -136,10 +134,10 @@ open class NotificationUtils {
                     .setGroup("chat_messages")
                     .setGroupSummary(false)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    builder.setSmallIcon(android.R.drawable.stat_notify_error)
+                    builder.setSmallIcon(R.drawable.ic_notification_small)
                         .color = ContextCompat.getColor(context, android.R.color.holo_red_light)
                 } else {
-                    builder.setSmallIcon(android.R.drawable.stat_notify_error)
+                    builder.setSmallIcon(R.drawable.ic_notification_small)
                 }
                 
                 // 發送通知
@@ -160,7 +158,7 @@ open class NotificationUtils {
                     spUtil.setLastNotificationTime(currentTime)
                     
                     Log.d("NotificationUtils", "🔔 通知已發送，ID: $uniqueId, 時間: $timestamp")
-                    logManager.addLog("✅ 通知已發送 - ID: $uniqueId, 時間: $timestamp", "INFO")
+                    logManager.addLog("✅ 已發送通知 ($appName)")
                 }
             }
         }
