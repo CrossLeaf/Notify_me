@@ -41,56 +41,56 @@ class SpUtil(context: Context) {
     }
 
     /**
-     * 獲取訊息內容
+     * Get message content
      */
     fun getMessageBody(): String {
         return sp.getString(MESSAGE_BODY_KEY, "") ?: ""
     }
 
     /**
-     * 編輯訊息內容
+     * Edit message content
      */
     fun editMessageBody(messageBody: String) {
         sp.edit().putString(MESSAGE_BODY_KEY, messageBody).apply()
     }
 
     /**
-     * 獲取最後通知時間
+     * Get last notification time
      */
     fun getLastNotificationTime(): Long {
         return sp.getLong(LAST_NOTIFICATION_TIME_KEY, 0L)
     }
 
     /**
-     * 設定最後通知時間
+     * Set last notification time
      */
     fun setLastNotificationTime(timestamp: Long) {
         sp.edit().putLong(LAST_NOTIFICATION_TIME_KEY, timestamp).apply()
     }
 
     /**
-     * 獲取通知音效 URI
+     * Get notification sound URI
      */
     fun getNotificationSoundUri(): String? {
         return sp.getString(NOTIFICATION_SOUND_URI_KEY, null)
     }
 
     /**
-     * 設定通知音效 URI
+     * Set notification sound URI
      */
     fun setNotificationSoundUri(uri: String?) {
         sp.edit().putString(NOTIFICATION_SOUND_URI_KEY, uri).apply()
     }
 
     /**
-     * 獲取通知音效名稱
+     * Get notification sound name
      */
     fun getNotificationSoundName(): String {
         return sp.getString(NOTIFICATION_SOUND_NAME_KEY, "Default notification sound (Warning)") ?: "Default notification sound (Warning)"
     }
 
     /**
-     * 設定通知音效名稱
+     * Set notification sound name
      */
     fun setNotificationSoundName(name: String) {
         sp.edit().putString(NOTIFICATION_SOUND_NAME_KEY, name).apply()

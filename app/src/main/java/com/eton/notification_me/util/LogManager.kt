@@ -15,7 +15,7 @@ class LogManager private constructor() {
         private var INSTANCE: LogManager? = null
         private const val TAG = "LogManager"
         private const val LOG_FILE_NAME = "notification_logs.txt"
-        private const val MAX_LOG_SIZE = 10000 // 最大日誌行數
+        private const val MAX_LOG_SIZE = 10000 // Maximum log lines
         
         fun getInstance(): LogManager {
             return INSTANCE ?: synchronized(this) {
@@ -34,13 +34,13 @@ class LogManager private constructor() {
         synchronized(logs) {
             logs.add(logEntry)
             
-            // 限制日誌數量，避免記憶體過大
+            // Limit log count to avoid excessive memory usage
             if (logs.size > MAX_LOG_SIZE) {
                 logs.removeAt(0)
             }
         }
         
-        // 同時輸出到系統日誌
+        // Also output to system log
         when (level) {
             "ERROR" -> Log.e(TAG, message)
             "WARN" -> Log.w(TAG, message)
@@ -56,13 +56,13 @@ class LogManager private constructor() {
         synchronized(logs) {
             logs.add(logEntry)
             
-            // 限制日誌數量，避免記憶體過大
+            // Limit log count to avoid excessive memory usage
             if (logs.size > MAX_LOG_SIZE) {
                 logs.removeAt(0)
             }
         }
         
-        // 同時輸出到系統日誌
+        // Also output to system log
         when (level) {
             "ERROR" -> Log.e(TAG, message)
             "WARN" -> Log.w(TAG, message)
@@ -83,7 +83,7 @@ class LogManager private constructor() {
         }
         addLog("🧹 Logs cleared")
         
-        // 清除後立即保存到文件
+        // Save to file immediately after clearing
         context?.let { 
             saveLogsToFile(it)
         }
@@ -92,7 +92,7 @@ class LogManager private constructor() {
     fun saveLogsToFile(context: Context): Boolean {
         return try {
             val file = File(context.filesDir, LOG_FILE_NAME)
-            val writer = FileWriter(file, false) // false = 覆寫文件
+            val writer = FileWriter(file, false) // false = overwrite file
             
             synchronized(logs) {
                 logs.forEach { logEntry ->

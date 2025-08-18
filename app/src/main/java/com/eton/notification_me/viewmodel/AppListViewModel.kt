@@ -54,13 +54,13 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
                 loadingText = "Loading app info..."
                 loadingProgress = 0.5f
                 
-                // 漸進式加載應用程式到UI
+                // Progressively load applications to UI
                 apps.forEachIndexed { index, appBean ->
                     _appList.add(appBean)
                     loadingProgress = 0.5f + (0.5f * (index + 1) / apps.size)
                     loadingText = "Loading... (${index + 1}/${apps.size})"
                     
-                    // 每10個應用程式暫停一下，讓UI有時間更新
+                    // Pause every 10 applications to give UI time to update
                     if (index % 10 == 0) {
                         kotlinx.coroutines.delay(50)
                     }
@@ -75,7 +75,7 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
                 Log.e("AppListViewModel", "Error loading apps: ${e.message}")
                 loadingText = "Load failed: ${e.message}"
             } finally {
-                kotlinx.coroutines.delay(300) // 顯示完成狀態一會兒
+                kotlinx.coroutines.delay(300) // Show completion state briefly
                 isLoading = false
                 loadingProgress = 0f
             }
