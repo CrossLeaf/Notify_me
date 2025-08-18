@@ -37,44 +37,44 @@ open class NotificationUtils {
         val logManager = LogManager.getInstance()
         val appName = getLabel(context, packageName)
         
-        Log.d("NotificationUtils", "=== 開始處理通知 ===")
+        Log.d("NotificationUtils", "=== Processing notification ===")
         Log.d("NotificationUtils", "App: $appName")
         Log.d("NotificationUtils", "Message: $messageBody")
         
         val spUtil = SpUtil(context)
         
-        // 獲取自訂音效設定
+        // Get custom sound settings
         val customSoundUriString = spUtil.getNotificationSoundUri()
         val customSoundUri = if (customSoundUriString != null) {
             Uri.parse(customSoundUriString)
         } else {
-            // 使用專案內的預設音效
+            // Use default sound from project
             Uri.parse("${ContentResolver.SCHEME_ANDROID_RESOURCE}://${context.packageName}/${R.raw.warning}")
         }
         
-        Log.d("NotificationUtils", "🎵 使用音效: ${spUtil.getNotificationSoundName()}")
-        Log.d("NotificationUtils", "🎵 音效URI: $customSoundUri")
+        Log.d("NotificationUtils", "🎵 Using sound: ${spUtil.getNotificationSoundName()}")
+        Log.d("NotificationUtils", "🎵 Sound URI: $customSoundUri")
         
-        // 檢查音效是否改變，如果改變則創建新的通知頻道
+        // Check if sound changed, create new notification channel if changed
         if (lastSoundUri != customSoundUri.toString()) {
-            Log.d("NotificationUtils", "🔄 音效已改變，創建新的通知頻道")
+            Log.d("NotificationUtils", "🔄 Sound changed, creating new notification channel")
             currentChannelId = "${CHANNEL_ID_BASE}_${System.currentTimeMillis()}"
             createNotificationChannelWithSound(context, customSoundUri)
             lastSoundUri = customSoundUri.toString()
         }
         
-        // 僅送出被選中的 app
+        // Only send notifications for selected apps
         if (!spUtil.getPackageName().contains(packageName)) {
-            Log.d("NotificationUtils", "應用程式未被選中，跳過處理")
-            logManager.addLog("🚫 $appName 未監控")
+            Log.d("NotificationUtils", "App not selected, skipping processing")
+            logManager.addLog("🚫 $appName not monitored")
             return
         }
         
-        // 過濾掉 Telegram 的摘要通知
+        // Filter out Telegram summary notifications
         if (packageName == "org.telegram.messenger") {
             if (isTelegramSummaryNotification(messageBody)) {
-                Log.d("NotificationUtils", "Telegram 摘要通知，跳過處理")
-                logManager.addNotificationLog("Telegram 摘要通知，跳過處理: $messageBody", "INFO")
+                Log.d("NotificationUtils", "Telegram summary notification, skipping processing")
+                logManager.addNotificationLog("Telegram summary notification, skipping processing: $messageBody", "INFO")
                 return
             }
         }
@@ -84,33 +84,33 @@ open class NotificationUtils {
             }.also { isMatch ->
                 Log.d("TAG", "sendNotification: match? $isMatch")
                 
-                // 如果條件不符合，直接返回
+                // If conditions don't match, return directly
                 if (!isMatch) {
-                    Log.d("TAG", "sendNotification: 條件不符合，跳過處理")
-                    logManager.addNotificationLog("❌ 條件不符合")
+                    Log.d("TAG", "sendNotification: Conditions not met, skipping processing")
+                    logManager.addNotificationLog("❌ Conditions not met")
                     return
                 }
                 
-                // 檢查是否為重複通知 (防止短時間內重複觸發)
+                // Check for duplicate notifications (prevent repeated triggers in short time)
                 val currentTime = System.currentTimeMillis()
                 val lastNotificationTime = spUtil.getLastNotificationTime()
                 val timeDiff = currentTime - lastNotificationTime
                 
-                // 如果距離上次通知時間少於2秒，且訊息內容相同，則跳過
+                // If less than 2 seconds since last notification and message content is the same, skip
                 if (timeDiff < 2000 && messageBody == spUtil.getMessageBody()) {
-                    Log.d("NotificationUtils", "⚠️ 重複通知，跳過處理 (時間差: ${timeDiff}ms)")
-                    logManager.addNotificationLog("重複通知，跳過處理: $messageBody", "INFO")
+                    Log.d("NotificationUtils", "⚠️ Duplicate notification, skipping processing (time diff: ${timeDiff}ms)")
+                    logManager.addNotificationLog("Duplicate notification, skipping processing: $messageBody", "INFO")
                     return
                 }
                 
-                // 記錄訊息
-                Log.d("NotificationUtils", "處理訊息: $messageBody")
-                logManager.addNotificationLog("關鍵字匹配，準備發送通知: $messageBody (來自: $appName)", "INFO")
+                // Record message
+                Log.d("NotificationUtils", "Processing message: $messageBody")
+                logManager.addNotificationLog("Keyword matched, preparing to send notification: $messageBody (from: $appName)", "INFO")
                 
-                // 更新最後處理的訊息內容
+                // Update last processed message content
                 spUtil.editMessageBody(messageBody)
                 
-                // 確保每次通知都有唯一的識別
+                // Ensure each notification has a unique identifier
                 val uniqueId = currentTime.toInt()
                 val timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date(currentTime))
                 
@@ -118,7 +118,7 @@ open class NotificationUtils {
                     .setLargeIcon(
                         ContextCompat.getDrawable(context, R.drawable.ic_notification)?.toBitmap()
                     )
-                    .setContentTitle("你被 tag 了 - ${getLabel(context, packageName)}")
+                    .setContentTitle("You've been tagged - ${getLabel(context, packageName)}")
                     .setContentText("$messageBody [$timestamp]")
                     .setColor(ContextCompat.getColor(context, R.color.black))
                     .setAutoCancel(true)
@@ -140,25 +140,25 @@ open class NotificationUtils {
                     builder.setSmallIcon(R.drawable.ic_notification_small)
                 }
                 
-                // 發送通知
+                // Send notification
                 with(NotificationManagerCompat.from(context)) {
                     if (areNotificationsEnabled()) {
                         @Suppress("MissingPermission")
                         notify(uniqueId, builder.build())
                     } else {
-                        Log.w("NotificationUtils", "通知權限未授予，無法發送通知")
-                        logManager.addLog("通知權限未授予，無法發送通知", "WARNING")
+                        Log.w("NotificationUtils", "Notification permission not granted, cannot send notification")
+                        logManager.addLog("Notification permission not granted, cannot send notification", "WARNING")
                         return
                     }
                     
-                    // 通知音效已由系統通知處理，不需要手動播放
-                    Log.d("NotificationUtils", "🔊 通知音效由系統處理: ${spUtil.getNotificationSoundName()}")
+                    // Notification sound handled by system notification, no need to play manually
+                    Log.d("NotificationUtils", "🔊 Notification sound handled by system: ${spUtil.getNotificationSoundName()}")
                     
-                    // 更新最後通知時間
+                    // Update last notification time
                     spUtil.setLastNotificationTime(currentTime)
                     
-                    Log.d("NotificationUtils", "🔔 通知已發送，ID: $uniqueId, 時間: $timestamp")
-                    logManager.addLog("✅ 已發送通知 ($appName)")
+                    Log.d("NotificationUtils", "🔔 Notification sent, ID: $uniqueId, Time: $timestamp")
+                    logManager.addLog("✅ Notification sent ($appName)")
                 }
             }
         }
@@ -188,7 +188,7 @@ open class NotificationUtils {
                 .build()
             channel.setSound(soundUri, audioAttributes)
             
-            Log.d("NotificationUtils", "🎵 創建通知頻道: $currentChannelId，音效: $soundUri")
+            Log.d("NotificationUtils", "🎵 Creating notification channel: $currentChannelId, sound: $soundUri")
 
             // Register the channel with the system
             notificationManager = context.getSystemService(NotificationManager::class.java)
@@ -205,8 +205,8 @@ open class NotificationUtils {
             val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(CHANNEL_ID_BASE, name, importance).apply {
                 description = descriptionText
-                // 確保每次都有聲音
-                setSound(null, null) // 先清除預設聲音
+                // Ensure sound is always played
+                setSound(null, null) // Clear default sound first
                 enableVibration(true)
                 vibrationPattern = longArrayOf(0, 300, 200, 300)
                 enableLights(true)
@@ -215,13 +215,13 @@ open class NotificationUtils {
                 setShowBadge(true)
             }
             
-            // 獲取自訂音效設定
+            // Get custom sound settings
             val spUtil = SpUtil(context)
             val customSoundUriString = spUtil.getNotificationSoundUri()
             val soundUri = if (customSoundUriString != null) {
                 Uri.parse(customSoundUriString)
             } else {
-                // 使用專案內的預設音效
+                // Use default sound from project
                 Uri.parse("${ContentResolver.SCHEME_ANDROID_RESOURCE}://${context.packageName}/${R.raw.warning}")
             }
             
@@ -240,17 +240,17 @@ open class NotificationUtils {
     }
 
     /**
-     * 判斷是否為 Telegram 摘要通知
-     * @param messageBody 訊息內容
-     * @return 是否為摘要通知
+     * Check if it's a Telegram summary notification
+     * @param messageBody message content
+     * @return whether it's a summary notification
      */
     private fun isTelegramSummaryNotification(messageBody: String): Boolean {
-        // 常見的 Telegram 摘要通知格式
+        // Common Telegram summary notification formats
         val summaryPatterns = listOf(
             ".*・\\d+\\s*new\\s*messages?\\s*from\\s*\\d+\\s*chats?.*", // Max・15 new messages from 4 chats
-            ".*\\d+\\s*new\\s*messages?\\s*from\\s*.*", // 其他格式的摘要
-            ".*unread\\s*messages?.*", // 未讀訊息摘要
-            ".*messages?\\s*from\\s*\\d+\\s*chats?.*" // 來自多個聊天室的訊息
+            ".*\\d+\\s*new\\s*messages?\\s*from\\s*.*", // Other summary formats
+            ".*unread\\s*messages?.*", // Unread message summary
+            ".*messages?\\s*from\\s*\\d+\\s*chats?.*" // Messages from multiple chats
         )
         
         return summaryPatterns.any { pattern ->
@@ -259,10 +259,10 @@ open class NotificationUtils {
     }
 
     /**
-     * 取得應用程式名稱
+     * Get application name
      * @param context Context
-     * @param packageName 包名
-     * @return 應用程式名稱
+     * @param packageName package name
+     * @return application name
      */
     private fun getLabel(context: Context, packageName: String) : String{
         val packageManager = context.packageManager
@@ -272,7 +272,7 @@ open class NotificationUtils {
 
             applicationLabel
         } catch (e: PackageManager.NameNotFoundException) {
-            // 找不到指定套件名稱的應用程式
+            // Cannot find application with specified package name
             e.printStackTrace()
             packageName
         }
