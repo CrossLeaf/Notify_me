@@ -59,7 +59,7 @@ fun AppListScreen(viewModel: AppListViewModel = viewModel()) {
         viewModel.loadApps(context)
     }
     
-    // 根據搜尋查詢過濾應用程式
+    // Filter applications based on search query
     val filteredApps = remember(viewModel.appList, searchQuery) {
         if (searchQuery.isEmpty()) {
             viewModel.appList
@@ -211,7 +211,7 @@ fun AppListScreen(viewModel: AppListViewModel = viewModel()) {
                             .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // 掃描圖示動畫效果
+                        // Scanning icon animation effect
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -237,7 +237,7 @@ fun AppListScreen(viewModel: AppListViewModel = viewModel()) {
                         
                         Spacer(modifier = Modifier.height(4.dp))
                         
-                        // 進度條
+                        // Progress bar
                         LinearProgressIndicator(
                             progress = { viewModel.loadingProgress },
                             modifier = Modifier

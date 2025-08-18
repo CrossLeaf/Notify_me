@@ -55,7 +55,7 @@ class NotificationSoundActivity : ComponentActivity() {
         currentPlayingRingtone?.stop()
         try {
             currentPlayingRingtone = RingtoneManager.getRingtone(this, soundItem.uri)
-            // 設定為多媒體音量播放，避免勿擾模式影響
+            // Set to media volume playback to avoid do not disturb mode interference
             currentPlayingRingtone?.streamType = android.media.AudioManager.STREAM_MUSIC
             currentPlayingRingtone?.play()
         } catch (e: Exception) {
@@ -249,7 +249,7 @@ fun SoundSelectionScreen(
                                     .padding(16.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                // 跑步小人動畫效果
+                                // Running figure animation effect
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -275,7 +275,7 @@ fun SoundSelectionScreen(
                                 
                                 Spacer(modifier = Modifier.height(4.dp))
                                 
-                                // 進度條
+                                // Progress bar
                                 LinearProgressIndicator(
                                     progress = { viewModel.loadingProgress },
                                     modifier = Modifier
