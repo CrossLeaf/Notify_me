@@ -180,10 +180,7 @@ fun SoundSelectionScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (viewModel.isLoading) 
-                            stringResource(R.string.found_sounds_loading, viewModel.soundList.size) 
-                        else 
-                            stringResource(R.string.total_sounds_found, viewModel.soundList.size),
+                        text = stringResource(R.string.total_sounds_found, viewModel.soundList.size),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
